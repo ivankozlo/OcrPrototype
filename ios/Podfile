@@ -12,6 +12,8 @@ target 'OcrPrototype' do
     :hermes_enabled => false
   )
 
+  pod 'react-native-camera', :path => '../node_modules/react-native-camera'
+
   target 'OcrPrototypeTests' do
     inherit! :complete
     # Pods for testing

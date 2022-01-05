@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, { Component } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -14,77 +14,105 @@ import {
   StyleSheet,
   Text,
   useColorScheme,
-  View,
+  View,Dimensions
 } from 'react-native';
 
-import {
-  Colors,
-  Header,
-} from 'react-native/Libraries/NewAppScreen';
+import { RNCamera } from 'react-native-camera';
 
-const Section = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+const { width, height } = Dimensions.get("window");
+export default class App extends Component {
+  constructor () {
+    super();
+    this.state = {
+      textDetected: false,
+      textBlocks: []
+    };
+    this.camera = React.createRef()
+  }
+  onCameraReady = () => {
+    console.log('CAMERA IS READY TO CAPTURE')
+  }
+  onCameraMountError = (err) => {
+    console.log("[CameraView::onCameraMountError] err=", err);
+  }
+  onTextDetected = (value) => {
+    if(value.textBlocks.length != 0){
+      this.setState({
+        textDetected: true,
+        textBlocks: value.textBlocks.map(item => item.value)
+      })
+    }
+    console.log(JSON.stringify(value.textBlocks.map(item => item.value), null, 2))
+    this.setState({
+      textDetected: true
+    })
+  }
+  render () {
+    const { textBlocks } = this.state 
+    let detectedTexts = ''
+    textBlocks.forEach(item => {
+      detectedTexts += item + ', '
+    })
+    return (
+      <SafeAreaView>
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <View style={styles.content}>
+            <View style={styles.camera}>
+              <RNCamera
+                ref={ref => {
+                  this.camera = ref;
+                }}
+                trackingEnabled
+                onTextRecognized={(value) => {
+                  this.onTextDetected(value)
+                }}
+                captureAudio={false}
+                mute={true}
+                style={{
+                  width: width,
+                  height: height
+                }}
+                type={RNCamera.Constants.Type.back}
+                onCameraReady={this.onCameraReady}
+                onMountError={this.onCameraMountError}
+                androidCameraPermissionOptions={{
+                  title: 'Permission to use camera',
+                  message: 'We need your permission to use your camera',
+                  buttonPositive: 'Ok',
+                  buttonNegative: 'Cancel',
+                }}
+              >
+              </RNCamera>
+            </View>
+          </View>
+        </ScrollView>
+        <View style={{height: 200, margin: 20}}>
+          <ScrollView>
+            <Text style={{color: 'red'}}>{"Detected text block:"}</Text>
+            <Text style={{fontSize: 12, color: 'black'}}>{
+              detectedTexts
+            }</Text>
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    )
+  }
+}
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  content: {
+    flex: 1,
+    height: height-200,
+    width: width,
+    margin: 0
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  camera: {
+    position: 'relative',
+    backgroundColor: 'gray'
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+  detectedTexts: {
+    background: 'gray',
+    height: 200
+  }
 });
 
-export default App;
