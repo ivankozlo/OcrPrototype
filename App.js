@@ -10,22 +10,27 @@ import React, { Component } from 'react';
 import {
   SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
-  View,Dimensions
+  View,Dimensions, TouchableOpacity
 } from 'react-native';
 
 import { RNCamera } from 'react-native-camera';
 
 const { width, height } = Dimensions.get("window");
+const _log = (val, desc = '') => {
+  console.log(desc, JSON.stringify(val, null, 2))
+}
+const MAX_OCCURENCE = 3
+const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
 export default class App extends Component {
   constructor () {
     super();
     this.state = {
       textDetected: false,
-      textBlocks: []
+      textBlocks: [],
+      nonce: 0,
+      frequencyTexts: []
     };
     this.camera = React.createRef()
   }
@@ -36,23 +41,71 @@ export default class App extends Component {
     console.log("[CameraView::onCameraMountError] err=", err);
   }
   onTextDetected = (value) => {
-    if(value.textBlocks.length != 0){
+    if(value.textBlocks.length != 0 && !this.state.textDetected){
+      let textBlocks = value.textBlocks.map(item => item.value.trim()).filter(item => item.length > 5 && item.length < 25)
+      let oldBlocks = [...this.state.textBlocks]
+      oldBlocks.push({
+        nonce: this.state.nonce, 
+        block: textBlocks
+      })
       this.setState({
-        textDetected: true,
-        textBlocks: value.textBlocks.map(item => item.value)
+        textBlocks: oldBlocks,
+        nonce: this.state.nonce + 1
+      }, () => {
+        this.interpretTextBlocks()
       })
     }
-    console.log(JSON.stringify(value.textBlocks.map(item => item.value), null, 2))
+  }
+  interpretTextBlocks = () => {
+    const { textBlocks } = this.state 
+    let duplicatedTextBlock = []
+    let tempTextBlock = []
+    let count = 0 
+    let flag = false
+    textBlocks.forEach(item => {
+      tempTextBlock.push(...item.block)
+    })
+    tempTextBlock.forEach(item => {
+      count = countOccurrences(tempTextBlock, item)
+      if(count >= MAX_OCCURENCE){
+        flag = true
+      }
+      duplicatedTextBlock.push({
+        text: item,
+        occurence: count
+      })
+    })
+    
+    duplicatedTextBlock.sort((a, b) => a.occurence > b.occurence ? -1 : 1)
+    if(flag){
+      const filtered = duplicatedTextBlock.reduce((acc, current) => {
+        const x = acc.find(item => item.text === current.text);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+      _log(filtered, 'FINAL DETECTION:')
+      this.setState({
+        textDetected: true,
+        frequencyTexts: filtered
+      })
+    }
+  }
+  reset = () => {
     this.setState({
-      textDetected: true
+      textDetected: false,
+      frequencyTexts: [],
+      textBlocks: [],
+      nonce: 0
     })
   }
   render () {
-    const { textBlocks } = this.state 
-    let detectedTexts = ''
-    textBlocks.forEach(item => {
-      detectedTexts += item + ', '
-    })
+    const { nonce, frequencyTexts, textDetected } = this.state 
+    // textBlocks.forEach(item => {
+    //   detectedTexts += item + ', '
+    // })
     return (
       <SafeAreaView>
         <ScrollView contentInsetAdjustmentBehavior="automatic">
@@ -88,10 +141,23 @@ export default class App extends Component {
         </ScrollView>
         <View style={{height: 200, margin: 20}}>
           <ScrollView>
-            <Text style={{color: 'red'}}>{"Detected text block:"}</Text>
-            <Text style={{fontSize: 12, color: 'black'}}>{
-              detectedTexts
-            }</Text>
+            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text style={{color: 'red'}}>{"Detected text blocks:"}</Text>
+              {textDetected && <TouchableOpacity onPress={this.reset}>
+                <Text>{'Rescan'}</Text>
+              </TouchableOpacity>}
+              {!textDetected && <Text>{'Scanning...'}</Text>}
+            </View>
+            {frequencyTexts.length == 0 && <Text style={{fontSize: 12, color: 'black'}}>{
+              `Please wait. Scan trying ${nonce} times...`
+            }</Text>}
+            {frequencyTexts.length != 0 && <View>
+              {frequencyTexts.map(item => {
+                return <Text style={{fontSize: 12, color: 'black'}}>{
+                  `Text: ${item.text}, Occurence: ${item.occurence}`
+                }</Text>
+              })}
+            </View>}
           </ScrollView>
         </View>
       </SafeAreaView>
