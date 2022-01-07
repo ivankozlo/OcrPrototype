@@ -21,16 +21,21 @@ const { width, height } = Dimensions.get("window");
 const _log = (val, desc = '') => {
   console.log(desc, JSON.stringify(val, null, 2))
 }
-const MAX_OCCURENCE = 3
+const MAX_SCAN_COUNT = 9
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
+const validateVin = vin => vin.match(new RegExp("^[A-HJ-NPR-Z0-9oOIa-hj-npr-z]{8}[a-zA-Z0-9XoO][A-HJ-NPR-Z0-9oOIa-hj-npr-z]{2}[0-9]{6}$"))
+const validateRegNum = num => num.match(new RegExp("^[0-9oO]{3}[.:,]?[0-9oO]{3}[.:,]?[0-9oO]{3}$"))
+const validatePlateNum = num => num.match(new RegExp("^[A-Za-z0]{2}[0-9oO]{3,6}$"))
+const validateRegDate = date => date.match(new RegExp("^[0-9]{2}[.:,]?[0-9]{2}[.:,]?[0-9]{2,4}$")) || date.match(new RegExp("^[0-9]{2}[.:,]?[0-9]{2}[.:,]?[0-9]{2,4}[a-zA-Z]{1,2}?$"))
+const validateTypeNum = num => num.match(new RegExp("^[0-9oO][a-zA-Z0][a-zA-Z0-9]{1,2}[0-9oO]{3}$"))
 export default class App extends Component {
   constructor () {
     super();
     this.state = {
       textDetected: false,
-      textBlocks: [],
       nonce: 0,
-      frequencyTexts: []
+      detectedValues: [],
+      finalValues: []
     };
     this.camera = React.createRef()
   }
@@ -40,72 +45,139 @@ export default class App extends Component {
   onCameraMountError = (err) => {
     console.log("[CameraView::onCameraMountError] err=", err);
   }
+  
   onTextDetected = (value) => {
-    if(value.textBlocks.length != 0 && !this.state.textDetected){
-      let textBlocks = value.textBlocks.map(item => item.value.trim()).filter(item => item.length > 5 && item.length < 25)
-      let oldBlocks = [...this.state.textBlocks]
-      oldBlocks.push({
-        nonce: this.state.nonce, 
-        block: textBlocks
+    if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
+      let textBlocks = value.textBlocks.map(item => item.value.replace(/\s/g, "")).filter(item => (item.length == 1) || item.length >= 5 && item.length < 18)
+      let vin = ''
+      let regNum = ''
+      let plateNum = ''
+      let regDate = ''
+      let typeNum = ''
+      textBlocks.forEach(item => {
+        if(validateVin(item)){
+          vin = item
+        }
+        if(validateRegNum(item)){
+          regNum = item
+        }
+        if(validatePlateNum(item)){
+          plateNum = item 
+        }
+        if(validateRegDate(item)){
+          regDate = item 
+        }
+        if(item == 'X' || item == 'x' || validateTypeNum(item)){
+          typeNum = item 
+        }
       })
+      let detectedValue = {
+        nonce: this.state.nonce,
+        vin: vin,
+        regNum: regNum,
+        regDate: regDate,
+        plateNum: plateNum,
+        typeNum: typeNum
+      }
+      let detectedValues = this.state.detectedValues 
+      if(vin || regNum || regDate || plateNum || typeNum){
+        detectedValues.push(detectedValue)
+      }
       this.setState({
-        textBlocks: oldBlocks,
-        nonce: this.state.nonce + 1
+        nonce: this.state.nonce + 1,
+        detectedValues: detectedValues
       }, () => {
         this.interpretTextBlocks()
       })
     }
   }
   interpretTextBlocks = () => {
-    const { textBlocks } = this.state 
-    let duplicatedTextBlock = []
-    let tempTextBlock = []
-    let count = 0 
-    let flag = false
-    textBlocks.forEach(item => {
-      tempTextBlock.push(...item.block)
-    })
-    tempTextBlock.forEach(item => {
-      count = countOccurrences(tempTextBlock, item)
-      if(count >= MAX_OCCURENCE){
-        flag = true
-      }
-      duplicatedTextBlock.push({
-        text: item,
-        occurence: count
-      })
-    })
-    
-    duplicatedTextBlock.sort((a, b) => a.occurence > b.occurence ? -1 : 1)
-    if(flag){
-      const filtered = duplicatedTextBlock.reduce((acc, current) => {
-        const x = acc.find(item => item.text === current.text);
-        if (!x) {
-          return acc.concat([current]);
-        } else {
-          return acc;
+    let detectedValues = this.state.detectedValues
+    let vin = {
+      category: 'vin',
+      values: [],
+      scanRate: 0,
+      duplicates: 0
+    }
+    let regDate = {
+      category: 'regDate',
+      values: [],
+      scanRate: 0,
+      duplicates: 0
+    }
+    let regNum = {
+      category: 'regNum',
+      values: [],
+      scanRate: 0,
+      duplicates: 0
+    }
+    let plateNum = {
+      category: 'plateNum',
+      values: [],
+      scanRate: 0,
+      duplicates: 0
+    }
+    let typeNum = {
+      category: 'typeNum',
+      values: [],
+      scanRate: 0,
+      duplicates: 0
+    }
+    detectedValues.forEach(item => {
+      if(item.vin){
+        if(vin.values.indexOf(item.vin) != -1){
+          vin.duplicates++
         }
-      }, []);
-      _log(filtered, 'FINAL DETECTION:')
+        vin.values.push(item.vin)
+        vin.scanRate++ 
+      }
+      if(item.regNum){
+        if(regNum.values.indexOf(item.regNum) != -1){
+          regNum.duplicates++
+        }
+        regNum.values.push(item.regNum)
+        regNum.scanRate++ 
+      }
+      if(item.plateNum){
+        if(plateNum.values.indexOf(item.plateNum) != -1){
+          plateNum.duplicates++
+        }
+        plateNum.values.push(item.plateNum)
+        plateNum.scanRate++ 
+      }
+      if(item.typeNum){
+        if(typeNum.values.indexOf(item.typeNum) != -1){
+          typeNum.duplicates++
+        }
+        typeNum.values.push(item.typeNum)
+        typeNum.scanRate++ 
+      }
+      if(item.regDate){
+        if(regDate.values.indexOf(item.regDate) != -1){
+          regDate.duplicates++
+        }
+        regDate.values.push(item.regDate)
+        regDate.scanRate++ 
+      }
+    })
+    if(vin.duplicates > 1 && regDate.duplicates > 1 && regNum.duplicates > 1 && typeNum.duplicates > 1 && plateNum.duplicates > 1 || this.state.nonce == 9){
+      let finalValues = [vin, plateNum, typeNum, regNum, regDate]
+      _log(finalValues, 'FINAL VALUES:')
       this.setState({
         textDetected: true,
-        frequencyTexts: filtered
+        finalValues: [...finalValues]
       })
     }
   }
   reset = () => {
     this.setState({
       textDetected: false,
-      frequencyTexts: [],
-      textBlocks: [],
-      nonce: 0
+      nonce: 0,
+      detectedValues: []
     })
   }
   render () {
-    const { nonce, frequencyTexts, textDetected } = this.state 
-    // textBlocks.forEach(item => {
-    //   detectedTexts += item + ', '
-    // })
+    const { textDetected, finalValues, nonce } = this.state 
     return (
       <SafeAreaView>
         <ScrollView contentInsetAdjustmentBehavior="automatic">
@@ -140,24 +212,37 @@ export default class App extends Component {
           </View>
         </ScrollView>
         <View style={{height: 200, margin: 20}}>
-          <ScrollView>
-            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
+          <ScrollView style={{backgroundColor: 'white'}}>
+            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'white'}}>
               <Text style={{color: 'red'}}>{"Detected text blocks:"}</Text>
               {textDetected && <TouchableOpacity onPress={this.reset}>
                 <Text>{'Rescan'}</Text>
               </TouchableOpacity>}
               {!textDetected && <Text>{'Scanning...'}</Text>}
             </View>
-            {frequencyTexts.length == 0 && <Text style={{fontSize: 12, color: 'black'}}>{
+            {finalValues.length == 0 && <Text style={{fontSize: 12, color: 'black'}}>{
               `Please wait. Scan trying ${nonce} times...`
             }</Text>}
-            {frequencyTexts.length != 0 && <View>
-              {frequencyTexts.map(item => {
-                return <Text style={{fontSize: 12, color: 'black'}}>{
-                  `Text: ${item.text}, Occurence: ${item.occurence}`
-                }</Text>
-              })}
-            </View>}
+            {finalValues.length != 0 && 
+              finalValues.map((item, idx) => {
+                return (
+                  <View key={idx}>
+                    <Text style={{fontWeight: '900'}}>{item.category.toUpperCase()}</Text>
+                    <View style={{flex: 1, flexDirection: 'column', marginLeft: 10}}>
+                      <Text>{"Values: "}</Text>
+                      {item.values.map((_item, _idx) => {
+                        return(
+                          <Text key={_idx}>{_item}</Text>
+                        )
+                      })}
+                      <Text>{`Scan rate: ${item.scanRate / nonce * 100}%`}</Text>
+                      <Text>{`Duplicates: ${item.duplicates}`}</Text>
+                    </View>
+                  </View>
+                )
+              })
+            }
+            <View style={{height: 200}}></View>
           </ScrollView>
         </View>
       </SafeAreaView>
