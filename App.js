@@ -71,13 +71,19 @@ export default class App extends Component {
       let typeNum = ''
       textBlocks.forEach(item => {
         if(validateVin(item)){
-          vin = item
+          if(vin == ''){
+            vin = item
+          }
         }
         if(validateRegNum(item)){
-          regNum = item.replace(/[.]/g, '')
+          if(regNum == ''){
+            regNum = item.replace(/[.]/g, '')
+          }
         }
         if(validatePlateNum(item)){
-          plateNum = item 
+          if(plateNum == ''){
+            plateNum = item 
+          }
         }
         if(validateRegDate(item)){
           if(regDate == ''){
@@ -85,7 +91,9 @@ export default class App extends Component {
           }
         }
         if(item == 'X' || item == 'x' || validateTypeNum(item)){
-          typeNum = item 
+          if(typeNum == ''){
+            typeNum = item
+          } 
         }
       })
       let detectedValue = {
