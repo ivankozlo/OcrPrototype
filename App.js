@@ -80,7 +80,9 @@ export default class App extends Component {
           plateNum = item 
         }
         if(validateRegDate(item)){
-          regDate = item.replace(/[^\d]/g, '')
+          if(regDate == ''){
+            regDate = item.replace(/[^\d]/g, '')
+          }
         }
         if(item == 'X' || item == 'x' || validateTypeNum(item)){
           typeNum = item 
