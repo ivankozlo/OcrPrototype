@@ -69,15 +69,15 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      // _log(value.textBlocks.map(item => {
-      //   return {
-      //     value: item.value,
-      //     position: {
-      //       x: item.bounds.origin.x,
-      //       y: item.bounds.origin.y,
-      //     }
-      //   }
-      // }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
+      _log(value.textBlocks.map(item => {
+        return {
+          value: item.value,
+          position: {
+            x: item.bounds.origin.x,
+            y: item.bounds.origin.y,
+          }
+        }
+      }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => item.value.replace(/\s/g, "")).filter(item => (item.length == 1) || item.length >= 5 && item.length < 19)
       let vin = ''
       let regNum = ''
@@ -121,7 +121,7 @@ export default class App extends Component {
       }
       let detectedValues = this.state.detectedValues 
       if(vin || regNum || regDate || plateNum || typeNum){
-        //_log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
+        _log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
         detectedValues.push(detectedValue)
       }
       this.setState({
@@ -258,8 +258,8 @@ export default class App extends Component {
     }
   }
   interpretCharacters = (data) => {
-    _log(data.values.map(item => item.length), 'CHARA:')
-    _log(getMostDuplicatesLength(data.values.map(item => item.length)), 'max length:')
+    // _log(data.values.map(item => item.length), 'CHARA:')
+    // _log(getMostDuplicatesLength(data.values.map(item => item.length)), 'max length:')
     let characters = data.characters 
     let characterArray = []
     let length = 0
