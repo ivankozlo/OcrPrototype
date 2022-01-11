@@ -23,10 +23,10 @@ const _log = (val, desc = '') => {
 }
 const MAX_SCAN_COUNT = 9
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
-const validateVin = vin => vin.match(new RegExp("^[a-zA-Z0-9]{12}[0-9iloOQzZD]{5}$"))
+const validateVin = vin => vin.match(new RegExp("^[a-zA-Z0-9]{12}[0-9iloOQzZDQBsGSJ]{5}$"))
 const validateRegNum = num => num.match(new RegExp("^[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}$"))
-const validatePlateNum = num => num.match(new RegExp("^[A-Za-z01]{2}[0-9iloOQzZD]{3,6}$"))
-const validateRegDate = date => date.match(new RegExp("^[0-9iloOQzZD]{2}[.:,]?[0-9iloOQzZD]{2}[.:,]?[0-9iloOQzZD]{2,4}[a-zA-Z01]{0,2}$"))
+const validatePlateNum = num => num.match(new RegExp("^AG|^AI|^AR|^BE|^BL|^BS|^FL|^FR|^GE|^GL|^GR|^JU|^LU|^NE|^NW|^OW|^SZ|^SH|^SO|^SG|^TG|^TI|^UR|^VD|^VS|^ZG|^ZH[0-9iloOQzZD]{3,6}$"))
+const validateRegDate = date => date.match(new RegExp("^(0[1-9ilzZ]|[12il][0-9iloOQzZD]|3[01oOil])[.:,]?(0[1-9ilzZ]|1[0-2oOil])[.:,]?([1-2il][09oO][0-9iloOQzZD][0-9iloOQzZD]|[0-9iloOQzZD]{2})[a-zA-Z01]{0,2}$"))
 const validateTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-Z01][a-zA-Z0-9]{1,2}[0-9iloOQzZD]{3}$"))
 export default class App extends Component {
   constructor () {
