@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 
 import { RNCamera } from 'react-native-camera';
+import { FileLogger } from "react-native-file-logger"
 
 const { width, height } = Dimensions.get("window");
 const _log = (val, desc = '') => {
@@ -28,6 +29,10 @@ const validateRegNum = num => num.match(new RegExp("^[0-9iloOQzZD]{3}[.:,]?[0-9i
 const validatePlateNum = num => num.match(new RegExp("^AG|^AI|^AR|^BE|^BL|^BS|^FL|^FR|^GE|^GL|^GR|^JU|^LU|^NE|^NW|^OW|^SZ|^SH|^SO|^SG|^TG|^TI|^UR|^VD|^VS|^ZG|^ZH[0-9iloOQzZD]{3,6}$"))
 const validateRegDate = date => date.match(new RegExp("^(0[1-9ilzZ]|[12il][0-9iloOQzZD]|3[01oOil])[.:,]?(0[1-9ilzZ]|1[0-2oOil])[.:,]?([1-2il][09oO][0-9iloOQzZD][0-9iloOQzZD]|[0-9iloOQzZD]{2})[a-zA-Z01]{0,2}$"))
 const validateTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-Z01][a-zA-Z0-9]{1,2}[0-9iloOQzZD]{3}$"))
+
+// FileLogger.configure({
+//   logsDirectory: ''
+// })
 export default class App extends Component {
   constructor () {
     super();
@@ -41,7 +46,7 @@ export default class App extends Component {
     this.camera = React.createRef()
   }
   onCameraReady = () => {
-    console.log('CAMERA IS READY TO CAPTURE')
+    console.log('**************************  CAMERA IS READY TO CAPTURE  ***************************')
   }
   onCameraMountError = (err) => {
     console.log("[CameraView::onCameraMountError] err=", err);
@@ -49,6 +54,15 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
+      _log(value.textBlocks.map(item => {
+        return {
+          value: item.value,
+          position: {
+            x: item.bounds.origin.x,
+            y: item.bounds.origin.y,
+          }
+        }
+      }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => item.value.replace(/\s/g, "")).filter(item => (item.length == 1) || item.length >= 5 && item.length < 19)
       let vin = ''
       let regNum = ''
@@ -82,6 +96,7 @@ export default class App extends Component {
       }
       let detectedValues = this.state.detectedValues 
       if(vin || regNum || regDate || plateNum || typeNum){
+        _log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
         detectedValues.push(detectedValue)
       }
       this.setState({
