@@ -24,9 +24,24 @@ const _log = (val, desc = '') => {
 }
 const MAX_SCAN_COUNT = 9
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
+const getMostDuplicatesLength = arr => {
+  let counts = {}, max = 0
+  for (let v in arr) {
+    counts[arr[v]] = (counts[arr[v]] || 0) + 1
+    if (counts[arr[v]] > max) { 
+      max = counts[arr[v]]
+    }
+  }
+  for (let v in arr) {
+    if(counts[arr[v]] == max){
+      return arr[v]
+    }
+  }
+  return 0
+}
 const validateVin = vin => vin.match(new RegExp("^[a-zA-Z0-9]{12}[0-9iloOQzZDQBsGSJ]{5}$"))
 const validateRegNum = num => num.match(new RegExp("^[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}$"))
-const validatePlateNum = num => num.match(new RegExp("^AG|^AI|^AR|^BE|^BL|^BS|^FL|^FR|^GE|^GL|^GR|^JU|^LU|^NE|^NW|^OW|^SZ|^SH|^SO|^SG|^TG|^TI|^UR|^VD|^VS|^ZG|^ZH[0-9iloOQzZD]{3,6}$"))
+const validatePlateNum = num => num.match(new RegExp("(^AG|^AI|^AR|^BE|^BL|^BS|^FL|^FR|^GE|^GL|^GR|^JU|^LU|^NE|^NW|^OW|^SZ|^SH|^SO|^SG|^TG|^TI|^UR|^VD|^VS|^ZG|^ZH)[0-9iloOQzZD]{3,6}$"))
 const validateRegDate = date => date.match(new RegExp("^(0[1-9ilzZ]|[12il][0-9iloOQzZD]|3[01oOil])[.:,]?(0[1-9ilzZ]|1[0-2oOil])[.:,]?([1-2il][09oO][0-9iloOQzZD][0-9iloOQzZD]|[0-9iloOQzZD]{2})[a-zA-Z01]{0,2}$"))
 const validateTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-Z01][a-zA-Z0-9]{1,2}[0-9iloOQzZD]{3}$"))
 
@@ -54,15 +69,15 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      _log(value.textBlocks.map(item => {
-        return {
-          value: item.value,
-          position: {
-            x: item.bounds.origin.x,
-            y: item.bounds.origin.y,
-          }
-        }
-      }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
+      // _log(value.textBlocks.map(item => {
+      //   return {
+      //     value: item.value,
+      //     position: {
+      //       x: item.bounds.origin.x,
+      //       y: item.bounds.origin.y,
+      //     }
+      //   }
+      // }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => item.value.replace(/\s/g, "")).filter(item => (item.length == 1) || item.length >= 5 && item.length < 19)
       let vin = ''
       let regNum = ''
@@ -106,7 +121,7 @@ export default class App extends Component {
       }
       let detectedValues = this.state.detectedValues 
       if(vin || regNum || regDate || plateNum || typeNum){
-        _log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
+        //_log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
         detectedValues.push(detectedValue)
       }
       this.setState({
@@ -226,6 +241,11 @@ export default class App extends Component {
     typeNum.characterArray = [...this.interpretCharacters(typeNum)]
     regNum.characterArray = [...this.interpretCharacters(regNum)]
     regDate.characterArray = [...this.interpretCharacters(regDate)]
+    vin.maxLength = getMostDuplicatesLength(vin.values.map(item => item.length))
+    plateNum.maxLength = getMostDuplicatesLength(plateNum.values.map(item => item.length))
+    typeNum.maxLength = getMostDuplicatesLength(typeNum.values.map(item => item.length))
+    regNum.maxLength = getMostDuplicatesLength(regNum.values.map(item => item.length))
+    regDate.maxLength = getMostDuplicatesLength(regDate.values.map(item => item.length))
     let finalValues = [vin, plateNum, typeNum, regNum, regDate]
     this.setState({
       finalValues: [...finalValues]
@@ -238,9 +258,12 @@ export default class App extends Component {
     }
   }
   interpretCharacters = (data) => {
+    _log(data.values.map(item => item.length), 'CHARA:')
+    _log(getMostDuplicatesLength(data.values.map(item => item.length)), 'max length:')
     let characters = data.characters 
     let characterArray = []
     let length = 0
+    
     characters.forEach(item => {
       if(item.pos > length){
         length = item.pos + 1
@@ -359,8 +382,10 @@ export default class App extends Component {
               finalValues.map((item, idx) => {
                 let candidate = ''
                 let detail = ''
-                item.characterArray.forEach(_item => {
-                  candidate = candidate + _item.candidate.char
+                item.characterArray.forEach((_item, index) => {
+                  if(index < item.maxLength){
+                    candidate = candidate + _item.candidate.char
+                  }
                   let temp = `\n${_item.pos}: `
                   _item.details.forEach(__item => {
                     temp += `${__item.char} x ${__item.occurence} (${__item.percent.toFixed(2)}%),` 
