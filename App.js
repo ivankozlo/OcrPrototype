@@ -352,9 +352,9 @@ export default class App extends Component {
             </View>
           </View>
         </ScrollView>
-        <View style={{height: 200, position: 'absolute', bottom: 0, left: 0, width: width, opacity: 0.4}}>
-          <ScrollView style={{backgroundColor: 'white'}}>
-            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'white'}}>
+        <View style={{height: 200, position: 'absolute', bottom: 0, left: 0, width: width, opacity: 1}}>
+          <ScrollView style={{backgroundColor: 'transparent'}}>
+            <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent'}}>
               <Text style={{color: 'red'}}>{"Detected text blocks:"}</Text>
               {textDetected && <TouchableOpacity onPress={this.reset}>
                 <Text>{'Rescan'}</Text>
@@ -378,14 +378,14 @@ export default class App extends Component {
                 })
                 return (
                   <View key={idx}>
-                    <Text style={{fontWeight: '900', color: 'black'}}>{item.category.toUpperCase()}</Text>
+                    <Text style={{fontWeight: '900', color: 'white'}}>{item.category.toUpperCase()}</Text>
                     <View style={{flex: 1, flexDirection: 'column', marginLeft: 10}}>
-                      <Text style={{color: 'black'}}>{"Candidate: " + candidate}</Text>
-                      <Text style={{color: 'black'}}>{"Details: " + detail}</Text>
-                      <Text style={{color: 'black'}}>{"Values: "}</Text>
+                      <Text style={{color: 'white'}}>{"Candidate: " + candidate}</Text>
+                      <Text style={{color: 'white'}}>{"Details: " + detail}</Text>
+                      <Text style={{color: 'white'}}>{"Values: "}</Text>
                       {item.values.map((_item, _idx) => {
                         return(
-                          <Text style={{marginLeft: 10, color: 'black'}} key={_idx}>{_item}</Text>
+                          <Text style={{marginLeft: 10, color: 'white'}} key={_idx}>{_item}</Text>
                         )
                       })}
                       {/* <Text>{`Scan rate: ${item.scanRate / nonce * 100}%`}</Text>
