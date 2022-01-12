@@ -352,7 +352,7 @@ export default class App extends Component {
             </View>
           </View>
         </ScrollView>
-        <View style={{height: 200, margin: 20}}>
+        <View style={{height: 200, position: 'absolute', bottom: 0, left: 0, width: width, opacity: 0.4}}>
           <ScrollView style={{backgroundColor: 'white'}}>
             <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'white'}}>
               <Text style={{color: 'red'}}>{"Detected text blocks:"}</Text>
@@ -361,23 +361,7 @@ export default class App extends Component {
               </TouchableOpacity>}
               {!textDetected && <Text>{'Scanning...'}</Text>}
             </View>
-            {/* {finalValues.length == 0 && 
-              <View>
-                <Text style={{fontSize: 12, color: 'black'}}>{
-                  `Please wait. Scan trying ${nonce} times...`
-                }</Text>
-                <View>
-                  {detectedValues.length != 0 && <View style={{marginLeft: 10}}>
-                      <Text style={{color: 'black'}}>{`Scan index: ${detectedValues[detectedValues.length - 1].nonce}`}</Text>
-                      <Text style={{color: 'black'}}>{`VIN: ${detectedValues[detectedValues.length - 1].vin}`}</Text>
-                      <Text style={{color: 'black'}}>{`regDate: ${detectedValues[detectedValues.length - 1].regDate}`}</Text>
-                      <Text style={{color: 'black'}}>{`regNum: ${detectedValues[detectedValues.length - 1].regNum}`}</Text>
-                      <Text style={{color: 'black'}}>{`plateNum: ${detectedValues[detectedValues.length - 1].plateNum}`}</Text>
-                      <Text style={{color: 'black'}}>{`typeNum: ${detectedValues[detectedValues.length - 1].typeNum}`}</Text>
-                    </View>}
-                </View>
-              </View>
-            } */}
+
             {finalValues.length != 0 &&
               finalValues.map((item, idx) => {
                 let candidate = ''
@@ -422,7 +406,7 @@ export default class App extends Component {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    height: height-200,
+    height: height,
     width: width,
     margin: 0
   },
