@@ -12,6 +12,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Image,
   View,Dimensions, TouchableOpacity
 } from 'react-native';
 
@@ -336,7 +337,8 @@ export default class App extends Component {
                 mute={true}
                 style={{
                   width: width,
-                  height: height
+                  height: height,
+                  position: 'relative'
                 }}
                 type={RNCamera.Constants.Type.back}
                 onCameraReady={this.onCameraReady}
@@ -348,6 +350,19 @@ export default class App extends Component {
                   buttonNegative: 'Cancel',
                 }}
               >
+                <Image
+                  style={{
+                    width: height,
+                    height: width,
+                    position: 'absolute',
+                    left: -width / 2 + 20,
+                    top: 140,
+                    
+                    transform: [{rotateZ: '90deg'}]
+                  }}
+                  resizeMode={"cover"}
+                  source={require('./assets/documents.png')}
+                />
               </RNCamera>
             </View>
           </View>
