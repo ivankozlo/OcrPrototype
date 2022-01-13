@@ -321,8 +321,8 @@ export default class App extends Component {
   render () {
     const { textDetected, finalValues, nonce, detectedValues } = this.state 
     return (
-      <SafeAreaView>
-        <ScrollView contentInsetAdjustmentBehavior="automatic">
+      <SafeAreaView style={{margin: 0}}>
+        <ScrollView contentInsetAdjustmentBehavior="automatic" style={{margin: 0}}>
           <View style={styles.content}>
             <View style={styles.camera}>
               <RNCamera
@@ -338,7 +338,11 @@ export default class App extends Component {
                 style={{
                   width: width,
                   height: height,
-                  position: 'relative'
+                  margin: 0,
+                  position: 'relative',
+                  // flex: 1,
+                  // justifyContent: 'center',
+                  // alignItems: 'center'
                 }}
                 type={RNCamera.Constants.Type.back}
                 onCameraReady={this.onCameraReady}
@@ -350,19 +354,21 @@ export default class App extends Component {
                   buttonNegative: 'Cancel',
                 }}
               >
-                <Image
-                  style={{
-                    width: height,
-                    height: width,
-                    position: 'absolute',
-                    left: -width / 2 + 20,
-                    top: 140,
-                    
-                    transform: [{rotateZ: '90deg'}]
-                  }}
-                  resizeMode={"cover"}
-                  source={require('./assets/documents.png')}
-                />
+                <View style={{flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Image
+                    style={{
+                      width: height,
+                      height: width,
+                      transform: [{rotateZ: '90deg'}]
+                    }}
+                    resizeMode={"cover"}
+                    source={require('./assets/documents.png')}
+                  />
+                </View>
+                
               </RNCamera>
             </View>
           </View>
@@ -427,7 +433,8 @@ const styles = StyleSheet.create({
   },
   camera: {
     position: 'relative',
-    backgroundColor: 'gray'
+    backgroundColor: 'gray',
+    margin: 0
   },
   detectedTexts: {
     background: 'gray',
