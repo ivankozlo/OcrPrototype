@@ -107,17 +107,17 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      _log(value.textBlocks.map(item => {
-        return {
-          value: item.value.replace(/\s/g, ""),
-          position: {
-            x1: item.bounds.origin.x,
-            y1: item.bounds.origin.y,
-            x2: item.bounds.origin.x + item.bounds.size.width,
-            y2: item.bounds.origin.y + item.bounds.size.height
-          }
-        }
-      }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
+      // _log(value.textBlocks.map(item => {
+      //   return {
+      //     value: item.value.replace(/\s/g, ""),
+      //     position: {
+      //       x1: item.bounds.origin.x,
+      //       y1: item.bounds.origin.y,
+      //       x2: item.bounds.origin.x + item.bounds.size.width,
+      //       y2: item.bounds.origin.y + item.bounds.size.height
+      //     }
+      //   }
+      // }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => {
         return {
           value: item.value.replace(/\s/g, ""),
@@ -150,7 +150,7 @@ export default class App extends Component {
         if(validateByRegexPlateNum(item.value)){
           if(plateNum == ''){
             plateNum = item.value 
-            //_log(item, 'PLATE NUMBER POS:')
+            _log(item, 'PLATE NUMBER POS:')
           }
         }
         if(validateByRegexRegDate(item.value)){
@@ -425,6 +425,54 @@ export default class App extends Component {
                     resizeMode={"contain"}
                     source={this.state.withBox ? require('./assets/doc_box.png') : require('./assets/doc.png')}
                   />
+                  <View style={{
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                    top: 23,
+                    left: 70,
+                    width: 137,
+                    height: 27
+                  }} />
+                  <View style={{
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                    top: 133,
+                    left: 88,
+                    width: 230,
+                    height: 27
+                  }} />
+                  <View style={{
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                    top: 191,
+                    left: 88,
+                    width: 169,
+                    height: 27
+                  }} />
+                  <View style={{
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                    top: 246,
+                    left: 88,
+                    width: 85,
+                    height: 27
+                  }} />
+                  <View style={{
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                    top: 276,
+                    left: 88,
+                    width: 85,
+                    height: 27
+                  }} />
+                  <View style={{
+                    position: 'absolute',
+                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+                    top: 396,
+                    left: 88,
+                    width: 85,
+                    height: 27
+                  }} />
                 </View>
               </RNCamera>
             </View>
