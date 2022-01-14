@@ -24,42 +24,42 @@ const _log = (val, desc = '') => {
   console.log(desc, JSON.stringify(val, null, 2))
 }
 const MAX_SCAN_COUNT = 9
-const POS = {
+const REDBOX_COORDINATION = {
   plateNum: {
-    x1: 70,
-    x2: 95,
-    y1: 90,
-    y2: 120
+    x1: 210,
+    x2: 620,
+    y1: 10,
+    y2: 90
   },
   vin: {
-    x1: 95,
-    x2: 125,
-    y1: 215,
-    y2: 245
+    x1: 270,
+    x2: 950,
+    y1: 340,
+    y2: 420
   },
   extColor: {
-    x1: 95,
-    x2: 125,
-    y1: 285,
-    y2: 315
+    x1: 270,
+    x2: 770,
+    y1: 510,
+    y2: 590
   },
   regNum: {
-    x1: 95,
-    x2: 125,
-    y1: 320,
-    y2: 350
+    x1: 270,
+    x2: 520,
+    y1: 690,
+    y2: 770
   },
   typeNum: {
-    x1: 95,
-    x2: 125,
-    y1: 355,
-    y2: 385
+    x1: 270,
+    x2: 520,
+    y1: 780,
+    y2: 860
   },
   regDate: {
-    x1: 95,
-    x2: 125,
-    y1: 470,
-    y2: 500
+    x1: 270,
+    x2: 530,
+    y1: 1130,
+    y2: 1210
   }
 }
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
@@ -420,7 +420,7 @@ export default class App extends Component {
                   <Image
                     style={{
                       width: width,
-                      // height: height,
+                      height: height,
                     }}
                     resizeMode={"contain"}
                     source={this.state.withBox ? require('./assets/doc_box.png') : require('./assets/doc.png')}
