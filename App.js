@@ -26,10 +26,10 @@ const _log = (val, desc = '') => {
 const MAX_SCAN_COUNT = 9
 const REDBOX_COORDINATION = {
   plateNum: {
-    x1: 210,
-    x2: 620,
-    y1: 10,
-    y2: 90
+    x1: 210, // 140
+    x2: 620, // 413
+    y1: 10, //6.67
+    y2: 90 // 60
   },
   vin: {
     x1: 270,
@@ -100,6 +100,7 @@ export default class App extends Component {
   }
   onCameraReady = () => {
     console.log('**************************  CAMERA IS READY TO CAPTURE  ***************************')
+    _log({width, height}, 'DIMENSIONS:')
   }
   onCameraMountError = (err) => {
     console.log("[CameraView::onCameraMountError] err=", err);
@@ -107,17 +108,17 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      // _log(value.textBlocks.map(item => {
-      //   return {
-      //     value: item.value.replace(/\s/g, ""),
-      //     position: {
-      //       x1: item.bounds.origin.x,
-      //       y1: item.bounds.origin.y,
-      //       x2: item.bounds.origin.x + item.bounds.size.width,
-      //       y2: item.bounds.origin.y + item.bounds.size.height
-      //     }
-      //   }
-      // }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
+      _log(value.textBlocks.map(item => {
+        return {
+          value: item.value.replace(/\s/g, ""),
+          position: {
+            x1: item.bounds.origin.x,
+            y1: item.bounds.origin.y,
+            x2: item.bounds.origin.x + item.bounds.size.width,
+            y2: item.bounds.origin.y + item.bounds.size.height
+          }
+        }
+      }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => {
         return {
           value: item.value.replace(/\s/g, ""),
@@ -425,6 +426,12 @@ export default class App extends Component {
                     resizeMode={"contain"}
                     source={this.state.withBox ? require('./assets/doc_box.png') : require('./assets/doc.png')}
                   />
+                  {/*
+                    x1: 210, // 140
+                    x2: 620, // 413
+                    y1: 10, //6.67
+                    y2: 90 // 60
+                  */}
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
