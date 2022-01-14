@@ -24,6 +24,44 @@ const _log = (val, desc = '') => {
   console.log(desc, JSON.stringify(val, null, 2))
 }
 const MAX_SCAN_COUNT = 9
+const POS = {
+  plateNum: {
+    x1: 70,
+    x2: 95,
+    y1: 90,
+    y2: 120
+  },
+  vin: {
+    x1: 95,
+    x2: 125,
+    y1: 215,
+    y2: 245
+  },
+  extColor: {
+    x1: 95,
+    x2: 125,
+    y1: 285,
+    y2: 315
+  },
+  regNum: {
+    x1: 95,
+    x2: 125,
+    y1: 320,
+    y2: 350
+  },
+  typeNum: {
+    x1: 95,
+    x2: 125,
+    y1: 355,
+    y2: 385
+  },
+  regDate: {
+    x1: 95,
+    x2: 125,
+    y1: 470,
+    y2: 500
+  }
+}
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
 const getMostDuplicatesLength = arr => {
   let counts = {}, max = 0
@@ -40,15 +78,13 @@ const getMostDuplicatesLength = arr => {
   }
   return 0
 }
-const validateVin = vin => vin.match(new RegExp("^[a-zA-Z0-9]{12}[0-9iloOQzZDQBsGSJ]{5}$"))
-const validateRegNum = num => num.match(new RegExp("^[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}$"))
-const validatePlateNum = num => num.match(new RegExp("(^AG|^AI|^AR|^BE|^BL|^BS|^FL|^FR|^GE|^GL|^GR|^JU|^LU|^NE|^NW|^OW|^SZ|^SH|^SO|^SG|^TG|^TI|^UR|^VD|^VS|^ZG|^ZH)[0-9iloOQzZD]{3,6}$"))
-const validateRegDate = date => date.match(new RegExp("^(0[1-9ilzZ]|[12il][0-9iloOQzZD]|3[01oOil])[.:,]?(0[1-9ilzZ]|1[0-2oOil])[.:,]?([1-2il][09oO][0-9iloOQzZD][0-9iloOQzZD]|[0-9iloOQzZD]{2})[a-zA-Z01]{0,2}$"))
-const validateTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-Z01][a-zA-Z0-9]{1,2}[0-9iloOQzZD]{3}$"))
+const validateByRegexVin = vin => vin.match(new RegExp("^[a-zA-Z0-9]{12}[0-9iloOQzZDQBsGSJ]{5}$"))
+const validateByRegexRegNum = num => num.match(new RegExp("^[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}[.:,]?[0-9iloOQzZD]{3}$"))
+const validateByRegexPlateNum = num => num.match(new RegExp("(^AG|^AI|^AR|^BE|^BL|^BS|^FL|^FR|^GE|^GL|^GR|^JU|^LU|^NE|^NW|^OW|^SZ|^SH|^SO|^SG|^TG|^TI|^UR|^VD|^VS|^ZG|^ZH)[0-9iloOQzZD]{3,6}$"))
+const validateByRegexRegDate = date => date.match(new RegExp("^(0[1-9ilzZ]|[12il][0-9iloOQzZD]|3[01oOil])[.:,]?(0[1-9ilzZ]|1[0-2oOil])[.:,]?([1-2il][09oO][0-9iloOQzZD][0-9iloOQzZD]|[0-9iloOQzZD]{2})[a-zA-Z01]{0,2}$"))
+const validateByRegexTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-Z01][a-zA-Z0-9]{1,2}[0-9iloOQzZD]{3}$"))
+const validateByRegexExtColor = color => color.match(new RegExp("^[a-z]$"))
 
-// FileLogger.configure({
-//   logsDirectory: ''
-// })
 export default class App extends Component {
   constructor () {
     super();
@@ -57,7 +93,8 @@ export default class App extends Component {
       nonce: 0,
       detectedValues: [],
       finalValues: [],
-      candidates: []
+      candidates: [],
+      withBox: false
     };
     this.camera = React.createRef()
   }
@@ -72,43 +109,60 @@ export default class App extends Component {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
       _log(value.textBlocks.map(item => {
         return {
-          value: item.value,
+          value: item.value.replace(/\s/g, ""),
           position: {
-            x: item.bounds.origin.x,
-            y: item.bounds.origin.y,
+            x1: item.bounds.origin.x,
+            y1: item.bounds.origin.y,
+            x2: item.bounds.origin.x + item.bounds.size.width,
+            y2: item.bounds.origin.y + item.bounds.size.height
           }
         }
       }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
-      let textBlocks = value.textBlocks.map(item => item.value.replace(/\s/g, "")).filter(item => (item.length == 1) || item.length >= 5 && item.length < 19)
+      let textBlocks = value.textBlocks.map(item => {
+        return {
+          value: item.value.replace(/\s/g, ""),
+          position: {
+            x1: item.bounds.origin.x,
+            y1: item.bounds.origin.y,
+            x2: item.bounds.origin.x + item.bounds.size.width,
+            y2: item.bounds.origin.y + item.bounds.size.height
+          }
+        }
+      }).filter(item => (item.value.length == 1) || item.value.length >= 5 && item.value.length < 19)
       let vin = ''
       let regNum = ''
       let plateNum = ''
       let regDate = ''
       let typeNum = ''
       textBlocks.forEach(item => {
-        if(validateVin(item)){
+        if(validateByRegexVin(item.value)){
           if(vin == ''){
-            vin = item
+            vin = item.value
+            //_log(item, 'VIN POS:')
           }
         }
-        if(validateRegNum(item)){
+        if(validateByRegexRegNum(item.value)){
           if(regNum == ''){
-            regNum = item.replace(/[.]/g, '')
+            regNum = item.value.replace(/[.]/g, '')
+            //_log(item, 'REG NUMBER POS:')
           }
         }
-        if(validatePlateNum(item)){
+        if(validateByRegexPlateNum(item.value)){
           if(plateNum == ''){
-            plateNum = item 
+            plateNum = item.value 
+            //_log(item, 'PLATE NUMBER POS:')
           }
         }
-        if(validateRegDate(item)){
+        if(validateByRegexRegDate(item.value)){
           if(regDate == ''){
-            regDate = item.replace(/[^\d]/g, '')
+            regDate = item.value.replace(/[^\d]/g, '')
+            //_log(item, 'REG DATE POS:')
           }
         }
-        if(item == 'X' || item == 'x' || validateTypeNum(item)){
+        if(item.value == 'X' || item.value == 'x' || validateByRegexTypeNum(item.value)){
           if(typeNum == ''){
-            typeNum = item
+            typeNum = item.value
+            //_log(item, 'TYPE NUMBER POS:')
           } 
         }
       })
@@ -122,7 +176,7 @@ export default class App extends Component {
       }
       let detectedValues = this.state.detectedValues 
       if(vin || regNum || regDate || plateNum || typeNum){
-        _log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
+        //_log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
         detectedValues.push(detectedValue)
       }
       this.setState({
@@ -259,8 +313,6 @@ export default class App extends Component {
     }
   }
   interpretCharacters = (data) => {
-    // _log(data.values.map(item => item.length), 'CHARA:')
-    // _log(getMostDuplicatesLength(data.values.map(item => item.length)), 'max length:')
     let characters = data.characters 
     let characterArray = []
     let length = 0
@@ -318,11 +370,16 @@ export default class App extends Component {
       candidates: []
     })
   }
+  changeBox = () => {
+    this.setState({
+      withBox: !this.state.withBox
+    })
+  }
   render () {
     const { textDetected, finalValues, nonce, detectedValues } = this.state 
     return (
       <SafeAreaView style={{margin: 0}}>
-        <ScrollView contentInsetAdjustmentBehavior="automatic" style={{margin: 0}}>
+        <ScrollView contentInsetAdjustmentBehavior="automatic" style={{margin: 0, width: width, height: height}}>
           <View style={styles.content}>
             <View style={styles.camera}>
               <RNCamera
@@ -340,9 +397,6 @@ export default class App extends Component {
                   height: height,
                   margin: 0,
                   position: 'relative',
-                  // flex: 1,
-                  // justifyContent: 'center',
-                  // alignItems: 'center'
                 }}
                 type={RNCamera.Constants.Type.back}
                 onCameraReady={this.onCameraReady}
@@ -358,17 +412,20 @@ export default class App extends Component {
                   alignItems: "center",
                   justifyContent: "center",
                 }}>
+                  <TouchableOpacity 
+                    onPress={this.changeBox}
+                    style={{backgroundColor: 'gray',  padding: 10, position: 'absolute', top: 10, right: 10, zIndex:10}}>
+                    <Text style={{color: 'white'}}>{this.state.withBox ? 'Hide box' : 'Show box'}</Text>
+                  </TouchableOpacity>
                   <Image
                     style={{
-                      width: height,
-                      height: width,
-                      transform: [{rotateZ: '90deg'}]
+                      width: width,
+                      // height: height,
                     }}
-                    resizeMode={"cover"}
-                    source={require('./assets/documents.png')}
+                    resizeMode={"contain"}
+                    source={this.state.withBox ? require('./assets/doc_box.png') : require('./assets/doc.png')}
                   />
                 </View>
-                
               </RNCamera>
             </View>
           </View>
