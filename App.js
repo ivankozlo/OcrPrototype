@@ -1,65 +1,51 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
 
 import React, { Component } from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  Image,
-  View,Dimensions, TouchableOpacity
-} from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, Image, View,Dimensions, TouchableOpacity } from 'react-native';
 
 import { RNCamera } from 'react-native-camera';
-import { FileLogger } from "react-native-file-logger"
 
 const { width, height } = Dimensions.get("window");
+const ratio = width / 1080
 const _log = (val, desc = '') => {
   console.log(desc, JSON.stringify(val, null, 2))
 }
 const MAX_SCAN_COUNT = 9
 const REDBOX_COORDINATION = {
   plateNum: {
-    x1: 210, // 140
-    x2: 620, // 413
-    y1: 10, //6.67
-    y2: 90 // 60
+    x1: 210 * ratio, // 140
+    x2: 620 * ratio, // 413
+    y1: 10 * ratio, //6.67
+    y2: 90 * ratio // 60
   },
   vin: {
-    x1: 270,
-    x2: 950,
-    y1: 340,
-    y2: 420
+    x1: 270 * ratio,
+    x2: 950 * ratio,
+    y1: 340 * ratio,
+    y2: 420 * ratio
   },
   extColor: {
-    x1: 270,
-    x2: 770,
-    y1: 510,
-    y2: 590
+    x1: 270 * ratio,
+    x2: 770 * ratio,
+    y1: 510 * ratio,
+    y2: 590 * ratio
   },
   regNum: {
-    x1: 270,
-    x2: 520,
-    y1: 690,
-    y2: 770
+    x1: 270 * ratio,
+    x2: 520 * ratio,
+    y1: 690 * ratio,
+    y2: 770 * ratio
   },
   typeNum: {
-    x1: 270,
-    x2: 520,
-    y1: 780,
-    y2: 860
+    x1: 270 * ratio,
+    x2: 520 * ratio,
+    y1: 780 * ratio,
+    y2: 860 * ratio
   },
   regDate: {
-    x1: 270,
-    x2: 530,
-    y1: 1130,
-    y2: 1210
+    x1: 270 * ratio,
+    x2: 530 * ratio,
+    y1: 1130 * ratio,
+    y2: 1210 * ratio
   }
 }
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
@@ -100,25 +86,25 @@ export default class App extends Component {
   }
   onCameraReady = () => {
     console.log('**************************  CAMERA IS READY TO CAPTURE  ***************************')
-    _log({width, height}, 'DIMENSIONS:')
+    _log({ width, height }, 'DIMENSIONS:')
   }
   onCameraMountError = (err) => {
-    console.log("[CameraView::onCameraMountError] err=", err);
+    _log(err, 'Camera load error:')
   }
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      _log(value.textBlocks.map(item => {
-        return {
-          value: item.value.replace(/\s/g, ""),
-          position: {
-            x1: item.bounds.origin.x,
-            y1: item.bounds.origin.y,
-            x2: item.bounds.origin.x + item.bounds.size.width,
-            y2: item.bounds.origin.y + item.bounds.size.height
-          }
-        }
-      }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
+      // _log(value.textBlocks.map(item => {
+      //   return {
+      //     value: item.value.replace(/\s/g, ""),
+      //     position: {
+      //       x1: item.bounds.origin.x,
+      //       y1: item.bounds.origin.y,
+      //       x2: item.bounds.origin.x + item.bounds.size.width,
+      //       y2: item.bounds.origin.y + item.bounds.size.height
+      //     }
+      //   }
+      // }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => {
         return {
           value: item.value.replace(/\s/g, ""),
@@ -395,10 +381,11 @@ export default class App extends Component {
                 mute={true}
                 style={{
                   width: width,
-                  height: height,
+                  height: 1920 * ratio,
                   margin: 0,
                   position: 'relative',
                 }}
+                zoom={0}
                 type={RNCamera.Constants.Type.back}
                 onCameraReady={this.onCameraReady}
                 onMountError={this.onCameraMountError}
@@ -421,7 +408,7 @@ export default class App extends Component {
                   <Image
                     style={{
                       width: width,
-                      height: height,
+                      height: 1920 * ratio,
                     }}
                     resizeMode={"contain"}
                     source={this.state.withBox ? require('./assets/doc_box.png') : require('./assets/doc.png')}
@@ -435,50 +422,50 @@ export default class App extends Component {
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: 23,
-                    left: 70,
-                    width: 137,
-                    height: 27
+                    top: REDBOX_COORDINATION.plateNum.y1,
+                    left: REDBOX_COORDINATION.plateNum.x1,
+                    width: REDBOX_COORDINATION.plateNum.x2 - REDBOX_COORDINATION.plateNum.x1,
+                    height: REDBOX_COORDINATION.plateNum.y2 - REDBOX_COORDINATION.plateNum.y1
                   }} />
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: 133,
-                    left: 88,
-                    width: 230,
-                    height: 27
+                    top: REDBOX_COORDINATION.vin.y1,
+                    left: REDBOX_COORDINATION.vin.x1,
+                    width: REDBOX_COORDINATION.vin.x2 - REDBOX_COORDINATION.vin.x1,
+                    height: REDBOX_COORDINATION.vin.y2 - REDBOX_COORDINATION.vin.y1
                   }} />
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: 191,
-                    left: 88,
-                    width: 169,
-                    height: 27
+                    top: REDBOX_COORDINATION.extColor.y1,
+                    left: REDBOX_COORDINATION.extColor.x1,
+                    width: REDBOX_COORDINATION.extColor.x2 - REDBOX_COORDINATION.extColor.x1,
+                    height: REDBOX_COORDINATION.extColor.y2 - REDBOX_COORDINATION.extColor.y1
                   }} />
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: 246,
-                    left: 88,
-                    width: 85,
-                    height: 27
+                    top: REDBOX_COORDINATION.regNum.y1,
+                    left: REDBOX_COORDINATION.regNum.x1,
+                    width: REDBOX_COORDINATION.regNum.x2 - REDBOX_COORDINATION.regNum.x1,
+                    height: REDBOX_COORDINATION.regNum.y2 - REDBOX_COORDINATION.regNum.y1
                   }} />
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: 276,
-                    left: 88,
-                    width: 85,
-                    height: 27
+                    top: REDBOX_COORDINATION.typeNum.y1,
+                    left: REDBOX_COORDINATION.typeNum.x1,
+                    width: REDBOX_COORDINATION.typeNum.x2 - REDBOX_COORDINATION.typeNum.x1,
+                    height: REDBOX_COORDINATION.typeNum.y2 - REDBOX_COORDINATION.typeNum.y1
                   }} />
                   <View style={{
                     position: 'absolute',
                     backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: 396,
-                    left: 88,
-                    width: 85,
-                    height: 27
+                    top: REDBOX_COORDINATION.regDate.y1,
+                    left: REDBOX_COORDINATION.regDate.x1,
+                    width: REDBOX_COORDINATION.regDate.x2 - REDBOX_COORDINATION.regDate.x1,
+                    height: REDBOX_COORDINATION.regDate.y2 - REDBOX_COORDINATION.regDate.y1
                   }} />
                 </View>
               </RNCamera>
