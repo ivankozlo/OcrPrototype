@@ -80,7 +80,25 @@ export default class App extends Component {
       detectedValues: [],
       finalValues: [],
       candidates: [],
-      withBox: false
+      withBox: false,
+      plateNumDetectionArea: {
+        x:0, y:0, width:0, height:0
+      },
+      vinDetectionArea: {
+        x:0, y:0, width:0, height:0
+      },
+      extColorDetectionArea: {
+        x:0, y:0, width:0, height:0
+      },
+      regNumDetectionArea: {
+        x:0, y:0, width:0, height:0
+      },
+      typeNumDetectionArea: {
+        x:0, y:0, width:0, height:0
+      },
+      regDateDetectionArea: {
+        x:0, y:0, width:0, height:0
+      },
     };
     this.camera = React.createRef()
   }
@@ -109,10 +127,10 @@ export default class App extends Component {
         return {
           value: item.value.replace(/\s/g, ""),
           position: {
-            x1: item.bounds.origin.x,
-            y1: item.bounds.origin.y,
-            x2: item.bounds.origin.x + item.bounds.size.width,
-            y2: item.bounds.origin.y + item.bounds.size.height
+            x: item.bounds.origin.x,
+            y: item.bounds.origin.y,
+            width: item.bounds.size.width,
+            height: item.bounds.size.height
           }
         }
       }).filter(item => (item.value.length == 1) || item.value.length >= 5 && item.value.length < 19)
@@ -125,31 +143,68 @@ export default class App extends Component {
         if(validateByRegexVin(item.value)){
           if(vin == ''){
             vin = item.value
+            this.setState({
+              vinDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
             //_log(item, 'VIN POS:')
           }
         }
         if(validateByRegexRegNum(item.value)){
           if(regNum == ''){
             regNum = item.value.replace(/[.]/g, '')
+            this.setState({
+              regNumDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
             //_log(item, 'REG NUMBER POS:')
           }
         }
         if(validateByRegexPlateNum(item.value)){
           if(plateNum == ''){
             plateNum = item.value 
-            _log(item, 'PLATE NUMBER POS:')
+            this.setState({
+              plateNumDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
           }
         }
         if(validateByRegexRegDate(item.value)){
           if(regDate == ''){
             regDate = item.value.replace(/[^\d]/g, '')
-            //_log(item, 'REG DATE POS:')
+            this.setState({
+              regDateDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
           }
         }
         if(item.value == 'X' || item.value == 'x' || validateByRegexTypeNum(item.value)){
           if(typeNum == ''){
             typeNum = item.value
-            //_log(item, 'TYPE NUMBER POS:')
+            this.setState({
+              typeNumDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
           } 
         }
       })
@@ -288,7 +343,7 @@ export default class App extends Component {
     typeNum.maxLength = getMostDuplicatesLength(typeNum.values.map(item => item.length))
     regNum.maxLength = getMostDuplicatesLength(regNum.values.map(item => item.length))
     regDate.maxLength = getMostDuplicatesLength(regDate.values.map(item => item.length))
-    let finalValues = [vin, plateNum, typeNum, regNum, regDate]
+    let finalValues = [plateNum, vin, regNum, typeNum, regDate]
     this.setState({
       finalValues: [...finalValues]
     })
@@ -363,7 +418,123 @@ export default class App extends Component {
     })
   }
   render () {
-    const { textDetected, finalValues, nonce, detectedValues } = this.state 
+    const { textDetected, finalValues, nonce, regDateDetectionArea, plateNumDetectionArea, vinDetectionArea, typeNumDetectionArea, regNumDetectionArea } = this.state 
+    
+    const PlateNumDetection = () => {
+      return (
+        <>
+          <View style={{
+            position: 'absolute',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            top: REDBOX_COORDINATION.plateNum.y1,
+            left: REDBOX_COORDINATION.plateNum.x1,
+            width: REDBOX_COORDINATION.plateNum.x2 - REDBOX_COORDINATION.plateNum.x1,
+            height: REDBOX_COORDINATION.plateNum.y2 - REDBOX_COORDINATION.plateNum.y1
+          }} />
+          <View style={{
+            position: 'absolute',
+            borderColor: 'blue',
+            borderWidth: 2,
+            top: plateNumDetectionArea.y,
+            left: plateNumDetectionArea.x,
+            width: plateNumDetectionArea.width,
+            height: plateNumDetectionArea.height
+          }} />
+        </>
+      )
+    }
+    const VinDetection = () => {
+      return (
+        <>
+          <View style={{
+            position: 'absolute',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            top: REDBOX_COORDINATION.vin.y1,
+            left: REDBOX_COORDINATION.vin.x1,
+            width: REDBOX_COORDINATION.vin.x2 - REDBOX_COORDINATION.vin.x1,
+            height: REDBOX_COORDINATION.vin.y2 - REDBOX_COORDINATION.vin.y1
+          }} />
+          <View style={{
+            position: 'absolute',
+            borderColor: 'blue',
+            borderWidth: 2,
+            top: vinDetectionArea.y,
+            left: vinDetectionArea.x,
+            width: vinDetectionArea.width,
+            height: vinDetectionArea.height
+          }} />
+        </>
+      )
+    }
+    const RegNumDetection = () => {
+      return (
+        <>
+          <View style={{
+            position: 'absolute',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            top: REDBOX_COORDINATION.regNum.y1,
+            left: REDBOX_COORDINATION.regNum.x1,
+            width: REDBOX_COORDINATION.regNum.x2 - REDBOX_COORDINATION.regNum.x1,
+            height: REDBOX_COORDINATION.regNum.y2 - REDBOX_COORDINATION.regNum.y1
+          }} />
+          <View style={{
+            position: 'absolute',
+            borderColor: 'blue',
+            borderWidth: 2,
+            top: regNumDetectionArea.y,
+            left: regNumDetectionArea.x,
+            width: regNumDetectionArea.width,
+            height: regNumDetectionArea.height
+          }} />
+        </>
+      )
+    }
+    const TypeNumDetection = () => {
+      return (
+        <>
+          <View style={{
+            position: 'absolute',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            top: REDBOX_COORDINATION.typeNum.y1,
+            left: REDBOX_COORDINATION.typeNum.x1,
+            width: REDBOX_COORDINATION.typeNum.x2 - REDBOX_COORDINATION.typeNum.x1,
+            height: REDBOX_COORDINATION.typeNum.y2 - REDBOX_COORDINATION.typeNum.y1
+          }} />
+          <View style={{
+            position: 'absolute',
+            borderColor: 'blue',
+            borderWidth: 2,
+            top: typeNumDetectionArea.y,
+            left: typeNumDetectionArea.x,
+            width: typeNumDetectionArea.width,
+            height: typeNumDetectionArea.height
+          }} />
+        </>
+      )
+    }
+    const RegDateDetection = () => {
+      return (
+        <>
+          <View style={{
+            position: 'absolute',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            top: REDBOX_COORDINATION.regDate.y1,
+            left: REDBOX_COORDINATION.regDate.x1,
+            width: REDBOX_COORDINATION.regDate.x2 - REDBOX_COORDINATION.regDate.x1,
+            height: REDBOX_COORDINATION.regDate.y2 - REDBOX_COORDINATION.regDate.y1
+          }} />
+          <View style={{
+            position: 'absolute',
+            borderColor: 'blue',
+            borderWidth: 2,
+            top: regDateDetectionArea.y,
+            left: regDateDetectionArea.x,
+            width: regDateDetectionArea.width,
+            height: regDateDetectionArea.height
+          }} />
+        </>
+      )
+    }
     return (
       <SafeAreaView style={{margin: 0}}>
         <ScrollView contentInsetAdjustmentBehavior="automatic" style={{margin: 0, width: width, height: height}}>
@@ -413,60 +584,11 @@ export default class App extends Component {
                     resizeMode={"contain"}
                     source={this.state.withBox ? require('./assets/doc_box.png') : require('./assets/doc.png')}
                   />
-                  {/*
-                    x1: 210, // 140
-                    x2: 620, // 413
-                    y1: 10, //6.67
-                    y2: 90 // 60
-                  */}
-                  <View style={{
-                    position: 'absolute',
-                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: REDBOX_COORDINATION.plateNum.y1,
-                    left: REDBOX_COORDINATION.plateNum.x1,
-                    width: REDBOX_COORDINATION.plateNum.x2 - REDBOX_COORDINATION.plateNum.x1,
-                    height: REDBOX_COORDINATION.plateNum.y2 - REDBOX_COORDINATION.plateNum.y1
-                  }} />
-                  <View style={{
-                    position: 'absolute',
-                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: REDBOX_COORDINATION.vin.y1,
-                    left: REDBOX_COORDINATION.vin.x1,
-                    width: REDBOX_COORDINATION.vin.x2 - REDBOX_COORDINATION.vin.x1,
-                    height: REDBOX_COORDINATION.vin.y2 - REDBOX_COORDINATION.vin.y1
-                  }} />
-                  <View style={{
-                    position: 'absolute',
-                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: REDBOX_COORDINATION.extColor.y1,
-                    left: REDBOX_COORDINATION.extColor.x1,
-                    width: REDBOX_COORDINATION.extColor.x2 - REDBOX_COORDINATION.extColor.x1,
-                    height: REDBOX_COORDINATION.extColor.y2 - REDBOX_COORDINATION.extColor.y1
-                  }} />
-                  <View style={{
-                    position: 'absolute',
-                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: REDBOX_COORDINATION.regNum.y1,
-                    left: REDBOX_COORDINATION.regNum.x1,
-                    width: REDBOX_COORDINATION.regNum.x2 - REDBOX_COORDINATION.regNum.x1,
-                    height: REDBOX_COORDINATION.regNum.y2 - REDBOX_COORDINATION.regNum.y1
-                  }} />
-                  <View style={{
-                    position: 'absolute',
-                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: REDBOX_COORDINATION.typeNum.y1,
-                    left: REDBOX_COORDINATION.typeNum.x1,
-                    width: REDBOX_COORDINATION.typeNum.x2 - REDBOX_COORDINATION.typeNum.x1,
-                    height: REDBOX_COORDINATION.typeNum.y2 - REDBOX_COORDINATION.typeNum.y1
-                  }} />
-                  <View style={{
-                    position: 'absolute',
-                    backgroundColor: 'rgba(255, 0, 0, 0.3)',
-                    top: REDBOX_COORDINATION.regDate.y1,
-                    left: REDBOX_COORDINATION.regDate.x1,
-                    width: REDBOX_COORDINATION.regDate.x2 - REDBOX_COORDINATION.regDate.x1,
-                    height: REDBOX_COORDINATION.regDate.y2 - REDBOX_COORDINATION.regDate.y1
-                  }} />
+                  <PlateNumDetection />
+                  <VinDetection />
+                  <RegNumDetection />
+                  <TypeNumDetection />
+                  <RegDateDetection />
                 </View>
               </RNCamera>
             </View>
