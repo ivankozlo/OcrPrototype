@@ -554,9 +554,15 @@ export default class App extends Component {
             left: plateNumDetectionArea.x,
             width: plateNumDetectionArea.width,
             height: plateNumDetectionArea.height
-          }}>
-            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.plateNum}</Text>
-          </View>
+          }}/>
+          <Text style={{
+            color:'black', 
+            fontSize:14, 
+            zIndex: 999, 
+            position: 'absolute', 
+            top: plateNumDetectionArea.y,
+            left: plateNumDetectionArea.x,
+          }}>{lastDetected.plateNum}</Text>
         </>
       )
     }
@@ -579,9 +585,15 @@ export default class App extends Component {
             left: vinDetectionArea.x,
             width: vinDetectionArea.width,
             height: vinDetectionArea.height
-          }} >
-            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.vin}</Text>
-          </View>
+          }} />
+          <Text style={{
+            color:'black', 
+            fontSize:14, 
+            zIndex: 999, 
+            position: 'absolute', 
+            top: vinDetectionArea.y,
+            left: vinDetectionArea.x,
+          }}>{lastDetected.vin}</Text>
         </>
       )
     }
@@ -604,9 +616,15 @@ export default class App extends Component {
             left: extColorDetectionArea.x,
             width: extColorDetectionArea.width,
             height: extColorDetectionArea.height
-          }} >
-            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.extColor}</Text>
-          </View>
+          }} />
+          <Text style={{
+            color:'black', 
+            fontSize:14, 
+            zIndex: 999, 
+            position: 'absolute', 
+            top: extColorDetectionArea.y,
+            left: extColorDetectionArea.x,
+          }}>{lastDetected.extColor}</Text>
         </>
       )
     }
@@ -629,9 +647,15 @@ export default class App extends Component {
             left: regNumDetectionArea.x,
             width: regNumDetectionArea.width,
             height: regNumDetectionArea.height
-          }} >
-            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.regNum}</Text>
-          </View>
+          }} />
+          <Text style={{
+            color:'black', 
+            fontSize:14, 
+            zIndex: 999, 
+            position: 'absolute', 
+            top: regNumDetectionArea.y,
+            left: regNumDetectionArea.x,
+          }}>{lastDetected.regNum}</Text>
         </>
       )
     }
@@ -654,9 +678,15 @@ export default class App extends Component {
             left: typeNumDetectionArea.x,
             width: typeNumDetectionArea.width,
             height: typeNumDetectionArea.height
-          }} >
-            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.typeNum}</Text>
-          </View>
+          }} />
+          <Text style={{
+            color:'black', 
+            fontSize:14, 
+            zIndex: 999, 
+            position: 'absolute', 
+            top: typeNumDetectionArea.y,
+            left: typeNumDetectionArea.x,
+          }}>{lastDetected.typeNum}</Text>
         </>
       )
     }
@@ -679,9 +709,15 @@ export default class App extends Component {
             left: regDateDetectionArea.x,
             width: regDateDetectionArea.width,
             height: regDateDetectionArea.height
-          }} >
-            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.regDate}</Text>
-          </View>
+          }} />
+          <Text style={{
+            color:'black', 
+            fontSize:14, 
+            zIndex: 999, 
+            position: 'absolute', 
+            top: regDateDetectionArea.y,
+            left: regDateDetectionArea.x,
+          }}>{lastDetected.regDate}</Text>
         </>
       )
     }
