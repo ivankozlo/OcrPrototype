@@ -9,7 +9,7 @@ const ratio = width / 1080
 const _log = (val, desc = '') => {
   console.log(desc, JSON.stringify(val, null, 2))
 }
-const MAX_SCAN_COUNT = 9
+const MAX_SCAN_COUNT = 50
 const REDBOX_COORDINATION = {
   plateNum: {
     x1: 210 * ratio,
