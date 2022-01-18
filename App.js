@@ -71,6 +71,22 @@ const validateByRegexRegDate = date => date.match(new RegExp("^(0[1-9ilzZ]|[12il
 const validateByRegexTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-Z01][a-zA-Z0-9]{1,2}[0-9iloOQzZD]{3}$"))
 const validateByRegexExtColor = color => color.match(new RegExp("^[a-z]$"))
 
+
+const validateByAreaPlateNum = plateNum => {
+
+}
+const validateByAreaVin = Vin => {
+  
+}
+const validateByAreaRegNum = RegNum => {
+  
+}
+const validateByAreaTypeNum = TypeNum => {
+  
+}
+const validateByAreaRegDate = RegDate => {
+  
+}
 export default class App extends Component {
   constructor () {
     super();
