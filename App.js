@@ -12,10 +12,10 @@ const _log = (val, desc = '') => {
 const MAX_SCAN_COUNT = 9
 const REDBOX_COORDINATION = {
   plateNum: {
-    x1: 210 * ratio, // 140
-    x2: 620 * ratio, // 413
-    y1: 10 * ratio, //6.67
-    y2: 90 * ratio // 60
+    x1: 210 * ratio,
+    x2: 620 * ratio,
+    y1: 10 * ratio, 
+    y2: 90 * ratio 
   },
   vin: {
     x1: 270 * ratio,
@@ -72,20 +72,21 @@ const validateByRegexTypeNum = num => num.match(new RegExp("^[0-9iloOQzZD][a-zA-
 const validateByRegexExtColor = color => color.match(new RegExp("^[a-z]$"))
 
 
-const validateByAreaPlateNum = plateNum => {
-
-}
-const validateByAreaVin = Vin => {
-  
-}
-const validateByAreaRegNum = RegNum => {
-  
-}
-const validateByAreaTypeNum = TypeNum => {
-  
-}
-const validateByAreaRegDate = RegDate => {
-  
+const validateByArea = (category, pos) => {
+  let f = REDBOX_COORDINATION[category] // filter area
+  let d = {
+    x1: pos.x,
+    x2: pos.x + pos.width,
+    y1: pos.y, 
+    y2: pos.y + pos.height 
+  } // detection area
+  if(d.x2 < f.x1 || f.x2 < d.x1){
+    return false 
+  }
+  if(d.y2 < f.y1 || f.y2 < d.y1){
+    return false 
+  }
+  return true 
 }
 export default class App extends Component {
   constructor () {
@@ -97,6 +98,7 @@ export default class App extends Component {
       finalValues: [],
       candidates: [],
       withBox: false,
+      lastDetected: {},
       plateNumDetectionArea: {
         x:0, y:0, width:0, height:0
       },
@@ -120,7 +122,6 @@ export default class App extends Component {
   }
   onCameraReady = () => {
     console.log('**************************  CAMERA IS READY TO CAPTURE  ***************************')
-    _log({ width, height }, 'DIMENSIONS:')
   }
   onCameraMountError = (err) => {
     _log(err, 'Camera load error:')
@@ -128,17 +129,6 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      // _log(value.textBlocks.map(item => {
-      //   return {
-      //     value: item.value.replace(/\s/g, ""),
-      //     position: {
-      //       x1: item.bounds.origin.x,
-      //       y1: item.bounds.origin.y,
-      //       x2: item.bounds.origin.x + item.bounds.size.width,
-      //       y2: item.bounds.origin.y + item.bounds.size.height
-      //     }
-      //   }
-      // }), `####################### SCAN INDEX #${this.state.nonce}: SCANNED VALUES #######################\n`)
       let textBlocks = value.textBlocks.map(item => {
         return {
           value: item.value.replace(/\s/g, ""),
@@ -155,8 +145,23 @@ export default class App extends Component {
       let plateNum = ''
       let regDate = ''
       let typeNum = ''
+      let extColor = ''
       textBlocks.forEach(item => {
-        if(validateByRegexVin(item.value)){
+        if(validateByArea('plateNum', item.position)){
+          if(plateNum == ''){
+            plateNum = item.value
+            this.setState({
+              plateNumDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
+            _log(item, 'Plate number:')
+          }
+        }
+        if(validateByArea('vin', item.position)){
           if(vin == ''){
             vin = item.value
             this.setState({
@@ -167,12 +172,26 @@ export default class App extends Component {
                 height: item.position.height
               }
             })
-            //_log(item, 'VIN POS:')
+            _log(item, 'VIN:')
           }
         }
-        if(validateByRegexRegNum(item.value)){
+        if(validateByArea('extColor', item.position)){
+          if(extColor == ''){
+            extColor = item.value
+            this.setState({
+              extColorDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
+            _log(item, 'Ext color:')
+          }
+        }
+        if(validateByArea('regNum', item.position)){
           if(regNum == ''){
-            regNum = item.value.replace(/[.]/g, '')
+            regNum = item.value
             this.setState({
               regNumDetectionArea: {
                 x: item.position.x,
@@ -181,36 +200,10 @@ export default class App extends Component {
                 height: item.position.height
               }
             })
-            //_log(item, 'REG NUMBER POS:')
+            _log(item, 'Reg number:')
           }
         }
-        if(validateByRegexPlateNum(item.value)){
-          if(plateNum == ''){
-            plateNum = item.value 
-            this.setState({
-              plateNumDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-          }
-        }
-        if(validateByRegexRegDate(item.value)){
-          if(regDate == ''){
-            regDate = item.value.replace(/[^\d]/g, '')
-            this.setState({
-              regDateDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-          }
-        }
-        if(item.value == 'X' || item.value == 'x' || validateByRegexTypeNum(item.value)){
+        if(validateByArea('typeNum', item.position)){
           if(typeNum == ''){
             typeNum = item.value
             this.setState({
@@ -221,8 +214,90 @@ export default class App extends Component {
                 height: item.position.height
               }
             })
-          } 
+            _log(item, 'Type number:')
+          }
         }
+        if(validateByArea('regDate', item.position)){
+          if(regDate == ''){
+            regDate = item.value
+            this.setState({
+              regDateDetectionArea: {
+                x: item.position.x,
+                y: item.position.y,
+                width: item.position.width,
+                height: item.position.height
+              }
+            })
+            _log(item, 'Reg date:')
+          }
+        }
+        // if(validateByRegexVin(item.value)){
+        //   if(vin == ''){
+        //     vin = item.value
+        //     this.setState({
+        //       vinDetectionArea: {
+        //         x: item.position.x,
+        //         y: item.position.y,
+        //         width: item.position.width,
+        //         height: item.position.height
+        //       }
+        //     })
+        //     //_log(item, 'VIN POS:')
+        //   }
+        // }
+        // if(validateByRegexRegNum(item.value)){
+        //   if(regNum == ''){
+        //     regNum = item.value.replace(/[.]/g, '')
+        //     this.setState({
+        //       regNumDetectionArea: {
+        //         x: item.position.x,
+        //         y: item.position.y,
+        //         width: item.position.width,
+        //         height: item.position.height
+        //       }
+        //     })
+        //     //_log(item, 'REG NUMBER POS:')
+        //   }
+        // }
+        // if(validateByRegexPlateNum(item.value)){
+        //   if(plateNum == ''){
+        //     plateNum = item.value 
+        //     this.setState({
+        //       plateNumDetectionArea: {
+        //         x: item.position.x,
+        //         y: item.position.y,
+        //         width: item.position.width,
+        //         height: item.position.height
+        //       }
+        //     })
+        //   }
+        // }
+        // if(validateByRegexRegDate(item.value)){
+        //   if(regDate == ''){
+        //     regDate = item.value.replace(/[^\d]/g, '')
+        //     this.setState({
+        //       regDateDetectionArea: {
+        //         x: item.position.x,
+        //         y: item.position.y,
+        //         width: item.position.width,
+        //         height: item.position.height
+        //       }
+        //     })
+        //   }
+        // }
+        // if(item.value == 'X' || item.value == 'x' || validateByRegexTypeNum(item.value)){
+        //   if(typeNum == ''){
+        //     typeNum = item.value
+        //     this.setState({
+        //       typeNumDetectionArea: {
+        //         x: item.position.x,
+        //         y: item.position.y,
+        //         width: item.position.width,
+        //         height: item.position.height
+        //       }
+        //     })
+        //   } 
+        // }
       })
       let detectedValue = {
         nonce: this.state.nonce,
@@ -230,16 +305,18 @@ export default class App extends Component {
         regNum: regNum,
         regDate: regDate,
         plateNum: plateNum,
-        typeNum: typeNum
+        typeNum: typeNum,
+        extColor: extColor
       }
       let detectedValues = this.state.detectedValues 
-      if(vin || regNum || regDate || plateNum || typeNum){
+      if(vin || regNum || regDate || plateNum || typeNum || extColor){
         //_log(detectedValue, 'DETECTED VALUES FROM ABOVE SCAN:')
         detectedValues.push(detectedValue)
       }
       this.setState({
         nonce: this.state.nonce + 1,
-        detectedValues: detectedValues
+        detectedValues: detectedValues,
+        lastDetected: detectedValue
       }, () => {
         this.interpretTextBlocks()
       })
@@ -256,6 +333,13 @@ export default class App extends Component {
     }
     let regDate = {
       category: 'regDate',
+      values: [],
+      scanRate: 0,
+      duplicates: 0,
+      characters: []
+    }
+    let extColor = {
+      category: 'extColor',
       values: [],
       scanRate: 0,
       duplicates: 0,
@@ -348,18 +432,33 @@ export default class App extends Component {
           })
         })
       }
+      if(item.extColor){
+        if(extColor.values.indexOf(item.extColor) != -1){
+          extColor.duplicates++
+        }
+        extColor.values.push(item.extColor)
+        extColor.scanRate++ 
+        item.extColor.split('').forEach((char, index) => {
+          extColor.characters.push({
+            char: char, 
+            pos: index
+          })
+        })
+      }
     })
     vin.characterArray = [...this.interpretCharacters(vin)]
     plateNum.characterArray = [...this.interpretCharacters(plateNum)]
     typeNum.characterArray = [...this.interpretCharacters(typeNum)]
     regNum.characterArray = [...this.interpretCharacters(regNum)]
     regDate.characterArray = [...this.interpretCharacters(regDate)]
+    extColor.characterArray = [...this.interpretCharacters(extColor)]
     vin.maxLength = getMostDuplicatesLength(vin.values.map(item => item.length))
     plateNum.maxLength = getMostDuplicatesLength(plateNum.values.map(item => item.length))
     typeNum.maxLength = getMostDuplicatesLength(typeNum.values.map(item => item.length))
     regNum.maxLength = getMostDuplicatesLength(regNum.values.map(item => item.length))
     regDate.maxLength = getMostDuplicatesLength(regDate.values.map(item => item.length))
-    let finalValues = [plateNum, vin, regNum, typeNum, regDate]
+    extColor.maxLength = getMostDuplicatesLength(extColor.values.map(item => item.length))
+    let finalValues = [plateNum, vin, extColor, regNum, typeNum, regDate]
     this.setState({
       finalValues: [...finalValues]
     })
@@ -434,7 +533,7 @@ export default class App extends Component {
     })
   }
   render () {
-    const { textDetected, finalValues, nonce, regDateDetectionArea, plateNumDetectionArea, vinDetectionArea, typeNumDetectionArea, regNumDetectionArea } = this.state 
+    const { textDetected, finalValues, detectedValues, lastDetected, nonce, regDateDetectionArea, plateNumDetectionArea, vinDetectionArea, typeNumDetectionArea, regNumDetectionArea, extColorDetectionArea } = this.state 
     
     const PlateNumDetection = () => {
       return (
@@ -455,7 +554,9 @@ export default class App extends Component {
             left: plateNumDetectionArea.x,
             width: plateNumDetectionArea.width,
             height: plateNumDetectionArea.height
-          }} />
+          }}>
+            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.plateNum}</Text>
+          </View>
         </>
       )
     }
@@ -478,7 +579,34 @@ export default class App extends Component {
             left: vinDetectionArea.x,
             width: vinDetectionArea.width,
             height: vinDetectionArea.height
+          }} >
+            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.vin}</Text>
+          </View>
+        </>
+      )
+    }
+    const ExtColorDetection = () => {
+      return (
+        <>
+          <View style={{
+            position: 'absolute',
+            backgroundColor: 'rgba(255, 0, 0, 0.3)',
+            top: REDBOX_COORDINATION.extColor.y1,
+            left: REDBOX_COORDINATION.extColor.x1,
+            width: REDBOX_COORDINATION.extColor.x2 - REDBOX_COORDINATION.extColor.x1,
+            height: REDBOX_COORDINATION.extColor.y2 - REDBOX_COORDINATION.extColor.y1
           }} />
+          <View style={{
+            position: 'absolute',
+            borderColor: 'blue',
+            borderWidth: 2,
+            top: extColorDetectionArea.y,
+            left: extColorDetectionArea.x,
+            width: extColorDetectionArea.width,
+            height: extColorDetectionArea.height
+          }} >
+            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.extColor}</Text>
+          </View>
         </>
       )
     }
@@ -501,7 +629,9 @@ export default class App extends Component {
             left: regNumDetectionArea.x,
             width: regNumDetectionArea.width,
             height: regNumDetectionArea.height
-          }} />
+          }} >
+            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.regNum}</Text>
+          </View>
         </>
       )
     }
@@ -524,7 +654,9 @@ export default class App extends Component {
             left: typeNumDetectionArea.x,
             width: typeNumDetectionArea.width,
             height: typeNumDetectionArea.height
-          }} />
+          }} >
+            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.typeNum}</Text>
+          </View>
         </>
       )
     }
@@ -547,7 +679,9 @@ export default class App extends Component {
             left: regDateDetectionArea.x,
             width: regDateDetectionArea.width,
             height: regDateDetectionArea.height
-          }} />
+          }} >
+            <Text style={{color:'black', fontSize:12, zIndex: 999}}>{lastDetected.regDate}</Text>
+          </View>
         </>
       )
     }
@@ -602,6 +736,7 @@ export default class App extends Component {
                   />
                   <PlateNumDetection />
                   <VinDetection />
+                  <ExtColorDetection />
                   <RegNumDetection />
                   <TypeNumDetection />
                   <RegDateDetection />
