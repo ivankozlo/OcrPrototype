@@ -12,40 +12,40 @@ const _log = (val, desc = '') => {
 const MAX_SCAN_COUNT = 50
 const REDBOX_COORDINATION = {
   plateNum: {
-    x1: 210 * ratio,
+    x1: 170 * ratio,
     x2: 620 * ratio,
-    y1: 10 * ratio, 
-    y2: 90 * ratio 
+    y1: 0 * ratio, 
+    y2: 150 * ratio 
   },
   vin: {
-    x1: 270 * ratio,
+    x1: 240 * ratio,
     x2: 950 * ratio,
-    y1: 340 * ratio,
-    y2: 420 * ratio
+    y1: 360 * ratio,
+    y2: 480 * ratio
   },
   extColor: {
-    x1: 270 * ratio,
-    x2: 770 * ratio,
-    y1: 510 * ratio,
-    y2: 590 * ratio
+    x1: 240 * ratio,
+    x2: 800 * ratio,
+    y1: 520 * ratio,
+    y2: 640 * ratio
   },
   regNum: {
-    x1: 270 * ratio,
-    x2: 520 * ratio,
-    y1: 690 * ratio,
-    y2: 770 * ratio
+    x1: 240 * ratio,
+    x2: 570 * ratio,
+    y1: 700 * ratio,
+    y2: 810 * ratio
   },
   typeNum: {
-    x1: 270 * ratio,
-    x2: 520 * ratio,
-    y1: 780 * ratio,
-    y2: 860 * ratio
+    x1: 240 * ratio,
+    x2: 570 * ratio,
+    y1: 800 * ratio,
+    y2: 910 * ratio
   },
   regDate: {
-    x1: 270 * ratio,
-    x2: 530 * ratio,
-    y1: 1130 * ratio,
-    y2: 1210 * ratio
+    x1: 240 * ratio,
+    x2: 570 * ratio,
+    y1: 1140 * ratio,
+    y2: 1250 * ratio
   }
 }
 const countOccurrences = (arr, val) => arr.reduce((a, v) => (v === val ? a + 1 : a), 0)
@@ -73,20 +73,25 @@ const validateByRegexExtColor = color => color.match(new RegExp("^[a-z]$"))
 
 
 const validateByArea = (category, pos) => {
-  let f = REDBOX_COORDINATION[category] // filter area
-  let d = {
+  let detection = REDBOX_COORDINATION[category] // filter area
+  let value = {
     x1: pos.x,
     x2: pos.x + pos.width,
     y1: pos.y, 
     y2: pos.y + pos.height 
   } // detection area
-  if(d.x2 < f.x1 || f.x2 < d.x1){
+  if(value.x1 > detection.x1 && value.x2 < detection.x2 && value.y1 > detection.y1 && value.y2 < detection.y2){
+	    return true 
+  }  
+  /*
+  if(value.x2 < detection.x1 || detection.x2 < value.x1){
     return false 
   }
-  if(d.y2 < f.y1 || f.y2 < d.y1){
+  if(value.y2 < detection.y1 || detection.y2 < value.y1){
     return false 
   }
-  return true 
+  */
+  return false 
 }
 export default class App extends Component {
   constructor () {
