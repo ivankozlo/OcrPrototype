@@ -133,8 +133,8 @@ export default class App extends Component {
       const ratios = await this.camera.getSupportedRatiosAsync()
       const ratio = ratios.find((ratio) => ratio === DESIRED_RATIO) || ratios[ratios.length - 1];
       this.setState({ camera_ratio: ratio });
-      _log(ratios, 'SUPPORTED RATIOS:')
-      _log(ratio, 'RATIO FOR THIS PHONE:')
+      // _log(ratios, 'SUPPORTED RATIOS:')
+      // _log(ratio, 'RATIO FOR THIS PHONE:')
     }
   }
   onCameraMountError = (err) => {
@@ -143,6 +143,7 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
+      _log(value.textBlocks.map(item => item.value), 'Detected texts:')
       let textBlocks = value.textBlocks.map(item => {
         return {
           value: item.value.replace(/\s/g, ""),
