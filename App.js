@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, Image, View,Dimensions, TouchableOpacity } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, Image, View,Dimensions, TouchableOpacity, Platform } from 'react-native';
 
 import { RNCamera } from 'react-native-camera';
 
@@ -10,6 +10,7 @@ const _log = (val, desc = '') => {
   console.log(desc, JSON.stringify(val, null, 2))
 }
 const MAX_SCAN_COUNT = 50
+const DESIRED_RATIO = '16:9'
 const REDBOX_COORDINATION = {
   plateNum: {
     x1: 170 * ratio,
@@ -122,11 +123,19 @@ export default class App extends Component {
       regDateDetectionArea: {
         x:0, y:0, width:0, height:0
       },
+      camera_ratio: DESIRED_RATIO
     };
     this.camera = React.createRef()
   }
-  onCameraReady = () => {
+  onCameraReady = async () => {
     console.log('**************************  CAMERA IS READY TO CAPTURE  ***************************')
+    if(Platform.OS == 'android' && this.camera){
+      const ratios = await this.camera.getSupportedRatiosAsync()
+      const ratio = ratios.find((ratio) => ratio === DESIRED_RATIO) || ratios[ratios.length - 1];
+      this.setState({ camera_ratio: ratio });
+      _log(ratios, 'SUPPORTED RATIOS:')
+      _log(ratio, 'RATIO FOR THIS PHONE:')
+    }
   }
   onCameraMountError = (err) => {
     _log(err, 'Camera load error:')
@@ -153,156 +162,71 @@ export default class App extends Component {
       let extColor = ''
       textBlocks.forEach(item => {
         if(validateByArea('plateNum', item.position)){
-          if(plateNum == ''){
-            plateNum = item.value
-            this.setState({
-              plateNumDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-            _log(item, 'Plate number:')
-          }
+          plateNum = item.value
+          this.setState({
+            plateNumDetectionArea: {
+              x: item.position.x,
+              y: item.position.y,
+              width: item.position.width,
+              height: item.position.height
+            }
+          })
         }
         if(validateByArea('vin', item.position)){
-          if(vin == ''){
-            vin = item.value
-            this.setState({
-              vinDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-            _log(item, 'VIN:')
-          }
+          vin = item.value
+          this.setState({
+            vinDetectionArea: {
+              x: item.position.x,
+              y: item.position.y,
+              width: item.position.width,
+              height: item.position.height
+            }
+          })
         }
         if(validateByArea('extColor', item.position)){
-          if(extColor == ''){
-            extColor = item.value
-            this.setState({
-              extColorDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-            _log(item, 'Ext color:')
-          }
+          extColor = item.value
+          this.setState({
+            extColorDetectionArea: {
+              x: item.position.x,
+              y: item.position.y,
+              width: item.position.width,
+              height: item.position.height
+            }
+          })
         }
         if(validateByArea('regNum', item.position)){
-          if(regNum == ''){
-            regNum = item.value
-            this.setState({
-              regNumDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-            _log(item, 'Reg number:')
-          }
+          regNum = item.value
+          this.setState({
+            regNumDetectionArea: {
+              x: item.position.x,
+              y: item.position.y,
+              width: item.position.width,
+              height: item.position.height
+            }
+          })
         }
         if(validateByArea('typeNum', item.position)){
-          if(typeNum == ''){
-            typeNum = item.value
-            this.setState({
-              typeNumDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-            _log(item, 'Type number:')
-          }
+          typeNum = item.value
+          this.setState({
+            typeNumDetectionArea: {
+              x: item.position.x,
+              y: item.position.y,
+              width: item.position.width,
+              height: item.position.height
+            }
+          })
         }
         if(validateByArea('regDate', item.position)){
-          if(regDate == ''){
-            regDate = item.value
-            this.setState({
-              regDateDetectionArea: {
-                x: item.position.x,
-                y: item.position.y,
-                width: item.position.width,
-                height: item.position.height
-              }
-            })
-            _log(item, 'Reg date:')
-          }
+          regDate = item.value
+          this.setState({
+            regDateDetectionArea: {
+              x: item.position.x,
+              y: item.position.y,
+              width: item.position.width,
+              height: item.position.height
+            }
+          })
         }
-        // if(validateByRegexVin(item.value)){
-        //   if(vin == ''){
-        //     vin = item.value
-        //     this.setState({
-        //       vinDetectionArea: {
-        //         x: item.position.x,
-        //         y: item.position.y,
-        //         width: item.position.width,
-        //         height: item.position.height
-        //       }
-        //     })
-        //     //_log(item, 'VIN POS:')
-        //   }
-        // }
-        // if(validateByRegexRegNum(item.value)){
-        //   if(regNum == ''){
-        //     regNum = item.value.replace(/[.]/g, '')
-        //     this.setState({
-        //       regNumDetectionArea: {
-        //         x: item.position.x,
-        //         y: item.position.y,
-        //         width: item.position.width,
-        //         height: item.position.height
-        //       }
-        //     })
-        //     //_log(item, 'REG NUMBER POS:')
-        //   }
-        // }
-        // if(validateByRegexPlateNum(item.value)){
-        //   if(plateNum == ''){
-        //     plateNum = item.value 
-        //     this.setState({
-        //       plateNumDetectionArea: {
-        //         x: item.position.x,
-        //         y: item.position.y,
-        //         width: item.position.width,
-        //         height: item.position.height
-        //       }
-        //     })
-        //   }
-        // }
-        // if(validateByRegexRegDate(item.value)){
-        //   if(regDate == ''){
-        //     regDate = item.value.replace(/[^\d]/g, '')
-        //     this.setState({
-        //       regDateDetectionArea: {
-        //         x: item.position.x,
-        //         y: item.position.y,
-        //         width: item.position.width,
-        //         height: item.position.height
-        //       }
-        //     })
-        //   }
-        // }
-        // if(item.value == 'X' || item.value == 'x' || validateByRegexTypeNum(item.value)){
-        //   if(typeNum == ''){
-        //     typeNum = item.value
-        //     this.setState({
-        //       typeNumDetectionArea: {
-        //         x: item.position.x,
-        //         y: item.position.y,
-        //         width: item.position.width,
-        //         height: item.position.height
-        //       }
-        //     })
-        //   } 
-        // }
       })
       let detectedValue = {
         nonce: this.state.nonce,
@@ -747,6 +671,7 @@ export default class App extends Component {
                   margin: 0,
                   position: 'relative',
                 }}
+                ratio={this.state.camera_ratio}
                 zoom={0}
                 type={RNCamera.Constants.Type.back}
                 onCameraReady={this.onCameraReady}
