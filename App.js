@@ -123,7 +123,8 @@ export default class App extends Component {
       regDateDetectionArea: {
         x:0, y:0, width:0, height:0
       },
-      camera_ratio: DESIRED_RATIO
+      camera_ratio: DESIRED_RATIO,
+      detectedTextBlocks: []
     };
     this.camera = React.createRef()
   }
@@ -143,24 +144,44 @@ export default class App extends Component {
   
   onTextDetected = (value) => {
     if(value.textBlocks.length != 0 && this.state.nonce <= MAX_SCAN_COUNT){
-      _log(value.textBlocks.map(item => item.value), 'Detected texts:')
-      let textBlocks = value.textBlocks.map(item => {
-        return {
-          value: item.value.replace(/\s/g, ""),
-          position: {
-            x: item.bounds.origin.x,
-            y: item.bounds.origin.y,
-            width: item.bounds.size.width,
-            height: item.bounds.size.height
-          }
+      let textBlocks = []
+
+      value.textBlocks.forEach(item => {
+        if(item.value.indexOf('\n') != -1){
+          item.components.forEach(_item => {
+            if(_item.type == 'line'){
+              textBlocks.push({
+                value: _item.value.replace(/\s/g, ""),
+                position: {
+                  x: _item.bounds.origin.x,
+                  y: _item.bounds.origin.y,
+                  width: _item.bounds.size.width,
+                  height: _item.bounds.size.height
+                }
+              })
+            }
+          })
+        }else{
+          textBlocks.push({
+            value: item.value.replace(/\s/g, ""),
+            position: {
+              x: item.bounds.origin.x,
+              y: item.bounds.origin.y,
+              width: item.bounds.size.width,
+              height: item.bounds.size.height
+            }
+          })
         }
-      }).filter(item => (item.value.length == 1) || item.value.length >= 5 && item.value.length < 19)
+      })
+      _log(textBlocks, "DETECTED TEXT BLOCKS:")
       let vin = ''
       let regNum = ''
       let plateNum = ''
       let regDate = ''
       let typeNum = ''
       let extColor = ''
+
+      let detectedTextBlocks = []
       textBlocks.forEach(item => {
         if(validateByArea('plateNum', item.position)){
           plateNum = item.value
@@ -171,6 +192,13 @@ export default class App extends Component {
               width: item.position.width,
               height: item.position.height
             }
+          })
+          detectedTextBlocks.push({
+            value: item.value,
+            x: item.position.x,
+            y: item.position.y,
+            width: item.position.width,
+            height: item.position.height
           })
         }
         if(validateByArea('vin', item.position)){
@@ -183,6 +211,13 @@ export default class App extends Component {
               height: item.position.height
             }
           })
+          detectedTextBlocks.push({
+            value: item.value,
+            x: item.position.x,
+            y: item.position.y,
+            width: item.position.width,
+            height: item.position.height
+          })
         }
         if(validateByArea('extColor', item.position)){
           extColor = item.value
@@ -193,6 +228,13 @@ export default class App extends Component {
               width: item.position.width,
               height: item.position.height
             }
+          })
+          detectedTextBlocks.push({
+            value: item.value,
+            x: item.position.x,
+            y: item.position.y,
+            width: item.position.width,
+            height: item.position.height
           })
         }
         if(validateByArea('regNum', item.position)){
@@ -205,6 +247,13 @@ export default class App extends Component {
               height: item.position.height
             }
           })
+          detectedTextBlocks.push({
+            value: item.value,
+            x: item.position.x,
+            y: item.position.y,
+            width: item.position.width,
+            height: item.position.height
+          })
         }
         if(validateByArea('typeNum', item.position)){
           typeNum = item.value
@@ -216,6 +265,13 @@ export default class App extends Component {
               height: item.position.height
             }
           })
+          detectedTextBlocks.push({
+            value: item.value,
+            x: item.position.x,
+            y: item.position.y,
+            width: item.position.width,
+            height: item.position.height
+          })
         }
         if(validateByArea('regDate', item.position)){
           regDate = item.value
@@ -226,6 +282,13 @@ export default class App extends Component {
               width: item.position.width,
               height: item.position.height
             }
+          })
+          detectedTextBlocks.push({
+            value: item.value,
+            x: item.position.x,
+            y: item.position.y,
+            width: item.position.width,
+            height: item.position.height
           })
         }
       })
@@ -246,7 +309,8 @@ export default class App extends Component {
       this.setState({
         nonce: this.state.nonce + 1,
         detectedValues: detectedValues,
-        lastDetected: detectedValue
+        lastDetected: detectedValue,
+        detectedTextBlocks: detectedTextBlocks
       }, () => {
         this.interpretTextBlocks()
       })
@@ -476,7 +540,7 @@ export default class App extends Component {
             width: REDBOX_COORDINATION.plateNum.x2 - REDBOX_COORDINATION.plateNum.x1,
             height: REDBOX_COORDINATION.plateNum.y2 - REDBOX_COORDINATION.plateNum.y1
           }} />
-          <View style={{
+          {/* <View style={{
             position: 'absolute',
             borderColor: 'blue',
             borderWidth: 2,
@@ -492,7 +556,7 @@ export default class App extends Component {
             position: 'absolute', 
             top: plateNumDetectionArea.y,
             left: plateNumDetectionArea.x,
-          }}>{lastDetected.plateNum}</Text>
+          }}>{lastDetected.plateNum}</Text> */}
         </>
       )
     }
@@ -507,7 +571,7 @@ export default class App extends Component {
             width: REDBOX_COORDINATION.vin.x2 - REDBOX_COORDINATION.vin.x1,
             height: REDBOX_COORDINATION.vin.y2 - REDBOX_COORDINATION.vin.y1
           }} />
-          <View style={{
+          {/* <View style={{
             position: 'absolute',
             borderColor: 'blue',
             borderWidth: 2,
@@ -523,7 +587,7 @@ export default class App extends Component {
             position: 'absolute', 
             top: vinDetectionArea.y,
             left: vinDetectionArea.x,
-          }}>{lastDetected.vin}</Text>
+          }}>{lastDetected.vin}</Text> */}
         </>
       )
     }
@@ -538,7 +602,7 @@ export default class App extends Component {
             width: REDBOX_COORDINATION.extColor.x2 - REDBOX_COORDINATION.extColor.x1,
             height: REDBOX_COORDINATION.extColor.y2 - REDBOX_COORDINATION.extColor.y1
           }} />
-          <View style={{
+          {/* <View style={{
             position: 'absolute',
             borderColor: 'blue',
             borderWidth: 2,
@@ -554,7 +618,7 @@ export default class App extends Component {
             position: 'absolute', 
             top: extColorDetectionArea.y,
             left: extColorDetectionArea.x,
-          }}>{lastDetected.extColor}</Text>
+          }}>{lastDetected.extColor}</Text> */}
         </>
       )
     }
@@ -569,7 +633,7 @@ export default class App extends Component {
             width: REDBOX_COORDINATION.regNum.x2 - REDBOX_COORDINATION.regNum.x1,
             height: REDBOX_COORDINATION.regNum.y2 - REDBOX_COORDINATION.regNum.y1
           }} />
-          <View style={{
+          {/* <View style={{
             position: 'absolute',
             borderColor: 'blue',
             borderWidth: 2,
@@ -585,7 +649,7 @@ export default class App extends Component {
             position: 'absolute', 
             top: regNumDetectionArea.y,
             left: regNumDetectionArea.x,
-          }}>{lastDetected.regNum}</Text>
+          }}>{lastDetected.regNum}</Text> */}
         </>
       )
     }
@@ -600,7 +664,7 @@ export default class App extends Component {
             width: REDBOX_COORDINATION.typeNum.x2 - REDBOX_COORDINATION.typeNum.x1,
             height: REDBOX_COORDINATION.typeNum.y2 - REDBOX_COORDINATION.typeNum.y1
           }} />
-          <View style={{
+          {/* <View style={{
             position: 'absolute',
             borderColor: 'blue',
             borderWidth: 2,
@@ -616,7 +680,7 @@ export default class App extends Component {
             position: 'absolute', 
             top: typeNumDetectionArea.y,
             left: typeNumDetectionArea.x,
-          }}>{lastDetected.typeNum}</Text>
+          }}>{lastDetected.typeNum}</Text> */}
         </>
       )
     }
@@ -631,7 +695,7 @@ export default class App extends Component {
             width: REDBOX_COORDINATION.regDate.x2 - REDBOX_COORDINATION.regDate.x1,
             height: REDBOX_COORDINATION.regDate.y2 - REDBOX_COORDINATION.regDate.y1
           }} />
-          <View style={{
+          {/* <View style={{
             position: 'absolute',
             borderColor: 'blue',
             borderWidth: 2,
@@ -647,7 +711,7 @@ export default class App extends Component {
             position: 'absolute', 
             top: regDateDetectionArea.y,
             left: regDateDetectionArea.x,
-          }}>{lastDetected.regDate}</Text>
+          }}>{lastDetected.regDate}</Text> */}
         </>
       )
     }
@@ -707,6 +771,27 @@ export default class App extends Component {
                   <RegNumDetection />
                   <TypeNumDetection />
                   <RegDateDetection />
+                  {this.state.detectedTextBlocks.map(item => {
+                    return (<>
+                      <View style={{
+                        position: 'absolute',
+                        borderColor: 'blue',
+                        borderWidth: 2,
+                        top: item.y,
+                        left: item.x,
+                        width: item.width,
+                        height: item.height
+                      }} />
+                      <Text style={{
+                        color:'black', 
+                        fontSize:14, 
+                        zIndex: 999, 
+                        position: 'absolute', 
+                        top: item.y,
+                        left: item.x,
+                      }}>{item.value}</Text>
+                    </>)
+                  })}
                 </View>
               </RNCamera>
             </View>
