@@ -12,8 +12,7 @@
   "dependencies": {
     "react": "17.0.2",
     "react-native": "0.66.4",
-    "react-native-camera": "v3.30.0",
-    "react-native-file-logger": "^0.2.1"
+    "react-native-camera": "^4.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
